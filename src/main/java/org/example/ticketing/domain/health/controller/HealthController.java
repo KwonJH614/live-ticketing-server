@@ -1,4 +1,4 @@
-package org.example.ticketing.entity.health.controller;
+package org.example.ticketing.domain.health.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
