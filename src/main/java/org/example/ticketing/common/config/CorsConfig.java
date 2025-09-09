@@ -1,4 +1,4 @@
-package org.example.ticketing.global.config;
+package org.example.ticketing.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

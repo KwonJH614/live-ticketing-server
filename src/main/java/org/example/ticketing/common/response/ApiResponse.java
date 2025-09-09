@@ -1,4 +1,4 @@
-package org.example.ticketing.global.response;
+package org.example.ticketing.common.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
