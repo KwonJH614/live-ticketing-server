@@ -3,6 +3,7 @@ package org.example.ticketing.common.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @Data
 @AllArgsConstructor
@@ -13,11 +14,11 @@ public class ApiResponse<T> {
   private String message;
 
   public static <T> ApiResponse<T> success(T data) {
-    return new ApiResponse<>(true, data, "OK");
+    return new ApiResponse<>(true, data, HttpStatus.OK.name());
   }
 
   public static <T> ApiResponse<T> success() {
-    return new ApiResponse<>(true, null ,"OK");
+    return new ApiResponse<>(true, null ,HttpStatus.OK.name());
   }
 
   public static <T> ApiResponse<T> fail(String message) {
