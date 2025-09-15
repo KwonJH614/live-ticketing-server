@@ -44,7 +44,7 @@ public class UserService {
     return userRepository.findByEmail(dto.getEmail())
             .switchIfEmpty(Mono.error(new UserNotFoundException(dto.getEmail())))
             .flatMap(user -> passwordEncoder.matches(dto.getPassword(), user.getPassword())
-                    ? Mono.just(new TokenResponse(jwtUtil.generateToken(dto.getEmail())))
+                    ? Mono.just(new TokenResponse(jwtUtil.generateToken(dto.getEmail(), Role.USER.name())))
                     : Mono.error(new InvalidPasswordException()));
   }
 

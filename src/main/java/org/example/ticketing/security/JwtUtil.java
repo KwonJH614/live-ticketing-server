@@ -17,9 +17,10 @@ public class JwtUtil {
   @Value("${spring.expiration-ms}")
   private Long expirationMs;
 
-  public String generateToken(String email) {
+  public String generateToken(String email, String role) {
     return Jwts.builder()
             .setSubject(email)
+            .claim("role", role)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
             .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
@@ -33,5 +34,14 @@ public class JwtUtil {
             .parseClaimsJws(token)
             .getBody()
             .getSubject();
+  }
+
+  public String getRole(String token) {
+    return Jwts.parserBuilder()
+            .setSigningKey(secret)
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .get("role", String.class);
   }
 }
