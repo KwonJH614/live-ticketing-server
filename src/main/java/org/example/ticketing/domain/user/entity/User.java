@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import org.example.ticketing.domain.user.enums.Role;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.r2dbc.config.EnableR2dbcAuditing;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -17,7 +16,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EnableR2dbcAuditing
 public class User {
   @Id
   private Long id;
