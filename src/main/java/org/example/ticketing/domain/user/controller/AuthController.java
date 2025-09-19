@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
 public class AuthController {
   private final UserService userService;
 
-  @PostMapping
+  @PostMapping("/register")
   public Mono<ResponseEntity<ApiResponse<RegisterResponse>>> register(
           @Valid @RequestBody UserDto userDto) {
     return userService.register(userDto)
