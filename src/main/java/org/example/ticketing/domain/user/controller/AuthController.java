@@ -25,10 +25,8 @@ public class AuthController {
   public Mono<ResponseEntity<ApiResponse<RegisterResponse>>> register(
           @Valid @RequestBody UserDto userDto) {
     return userService.register(userDto)
-            .map(response -> ResponseEntity.ok(ApiResponse.success(response)))
-            .onErrorResume(e -> Mono.just(
-                    ResponseEntity.badRequest().body(ApiResponse.fail(e.getMessage()))
-            ));
+            .map(response -> ResponseEntity.ok(ApiResponse.success(response))
+            );
   }
 
   @PostMapping("/login")
