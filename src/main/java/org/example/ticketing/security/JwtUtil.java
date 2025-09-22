@@ -29,7 +29,7 @@ public class JwtUtil {
 
   public String getEmail(String token) {
     return Jwts.parserBuilder()
-            .setSigningKey(secret)
+            .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
             .build()
             .parseClaimsJws(token)
             .getBody()
@@ -38,7 +38,7 @@ public class JwtUtil {
 
   public String getRole(String token) {
     return Jwts.parserBuilder()
-            .setSigningKey(secret)
+            .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
             .build()
             .parseClaimsJws(token)
             .getBody()
@@ -47,6 +47,10 @@ public class JwtUtil {
 
   public boolean validateToken(String token) {
     try {
+      Jwts.parserBuilder()
+              .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+              .build()
+              .parseClaimsJws(token);
       return true;
     } catch (Exception e) {
       return false;

@@ -12,7 +12,7 @@ import org.example.ticketing.domain.user.entity.User;
 import org.example.ticketing.domain.user.enums.Role;
 import org.example.ticketing.domain.user.repository.UserRepository;
 import org.example.ticketing.security.JwtUtil;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 public class UserService {
 
   private final UserRepository userRepository;
-//  private final BCryptPasswordEncoder passwordEncoder;
+  private final BCryptPasswordEncoder passwordEncoder;
   private final JwtUtil jwtUtil;
 
   public Mono<RegisterResponse> register(UserDto dto) {
@@ -33,27 +33,19 @@ public class UserService {
                     User.builder()
                             .username(dto.getUsername())
                             .email(dto.getEmail())
-//                            .password(passwordEncoder.encode(dto.getPassword()))
-                            .password(dto.getPassword())
+                            .password(passwordEncoder.encode(dto.getPassword()))
                             .role(Role.USER)
                             .createdAt(LocalDateTime.now())
                             .build()
-            ).map(saved -> new RegisterResponse(saved.getUsername(), "회원가입 완료"))));
+            ).map(saved -> new RegisterResponse(saved.getEmail(), "회원가입 완료"))));
   }
 
   public Mono<TokenResponse> login(LoginRequestDto dto) {
     return userRepository.findByEmail(dto.getEmail())
             .switchIfEmpty(Mono.error(new UserNotFoundException(dto.getEmail())))
-//            .flatMap(user -> passwordEncoder.matches(dto.getPassword(), user.getPassword())
-//                    ? Mono.just(new TokenResponse(jwtUtil.generateToken(dto.getEmail(), Role.USER.name())))
-//                    : Mono.error(new InvalidPasswordException()));
-            .flatMap(user -> {
-              if (dto.getPassword().equals(user.getPassword())) {
-                return Mono.just(new TokenResponse(jwtUtil.generateToken(dto.getEmail(), Role.USER.name())));
-              } else {
-                return Mono.error(new InvalidPasswordException());
-              }
-            });
+            .flatMap(user -> passwordEncoder.matches(dto.getPassword(), user.getPassword())
+                    ? Mono.just(new TokenResponse(jwtUtil.generateToken(dto.getEmail(), Role.USER.name())))
+                    : Mono.error(new InvalidPasswordException()));
   }
 
 }
