@@ -39,8 +39,7 @@ public class SecurityConfig {
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .authorizeExchange(exchanges -> exchanges
-                    .pathMatchers(HttpMethod.POST, "/api/users/register").permitAll()
-                    .pathMatchers(HttpMethod.POST, "/api/users/login").permitAll()
+                    .pathMatchers(HttpMethod.POST, "/api/users/**").permitAll()
                     .pathMatchers("/health").permitAll()
                     .anyExchange().authenticated()
             )

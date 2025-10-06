@@ -1,18 +1,18 @@
 package org.example.ticketing.domain.user.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.common.response.ApiResponse;
 import org.example.ticketing.domain.user.dto.LoginRequestDto;
 import org.example.ticketing.domain.user.dto.RegisterResponse;
 import org.example.ticketing.domain.user.dto.TokenResponse;
-import org.example.ticketing.domain.user.dto.UserDto;
+import org.example.ticketing.domain.user.dto.RegisterRequest;
+import org.example.ticketing.domain.user.service.EmailVerificationService;
 import org.example.ticketing.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -20,10 +20,19 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/users")
 public class AuthController {
   private final UserService userService;
+  private final EmailVerificationService emailVerificationService;
+
+  @PostMapping("/verification-codes")
+  public Mono<ResponseEntity<ApiResponse<String>>> sendVerificationCode(@RequestParam @NotBlank @Email String email) {
+    return emailVerificationService.sendVerificationCode(email)
+            .then(Mono.just(ResponseEntity.ok(
+                    ApiResponse.success("인증 코드가 이메일로 전송되었습니다")
+            )));
+  }
 
   @PostMapping("/register")
   public Mono<ResponseEntity<ApiResponse<RegisterResponse>>> register(
-          @Valid @RequestBody UserDto userDto) {
+          @Valid @RequestBody RegisterRequest userDto) {
     return userService.register(userDto)
             .map(response -> ResponseEntity.ok(ApiResponse.success(response))
             );

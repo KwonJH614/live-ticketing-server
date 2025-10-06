@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.MissingRequestValueException;
 import reactor.core.publisher.Mono;
 
 import java.util.stream.Collectors;
@@ -38,6 +39,16 @@ public class GlobalExceptionHandler {
             .status(e.getStatus())
             .body(ApiResponse.fail(e.getMessage())));
   }
+
+  // BAD_REQUEST 처리
+  @ExceptionHandler(MissingRequestValueException.class)
+  public Mono<ResponseEntity<ApiResponse<Void>>> handleMissingRequestValueException(MissingRequestValueException e) {
+    log.warn("Missing Request Parameter: {}", e.getReason());
+    return Mono.just(ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.fail("잘못된 요청입니다: " + e.getReason())));
+  }
+
 
   // 그 외 모든 예외 처리
   @ExceptionHandler(Exception.class)
