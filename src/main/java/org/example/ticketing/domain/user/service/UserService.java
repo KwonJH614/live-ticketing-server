@@ -3,11 +3,12 @@ package org.example.ticketing.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.common.exception.DuplicateUserException;
 import org.example.ticketing.common.exception.InvalidPasswordException;
+import org.example.ticketing.common.exception.InvalidVerificationCodeException;
 import org.example.ticketing.common.exception.UserNotFoundException;
 import org.example.ticketing.domain.user.dto.LoginRequestDto;
 import org.example.ticketing.domain.user.dto.RegisterResponse;
 import org.example.ticketing.domain.user.dto.TokenResponse;
-import org.example.ticketing.domain.user.dto.UserDto;
+import org.example.ticketing.domain.user.dto.RegisterRequest;
 import org.example.ticketing.domain.user.entity.User;
 import org.example.ticketing.domain.user.enums.Role;
 import org.example.ticketing.domain.user.repository.UserRepository;
@@ -23,21 +24,34 @@ import java.time.LocalDateTime;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final EmailVerificationService emailVerificationService;
   private final BCryptPasswordEncoder passwordEncoder;
   private final JwtUtil jwtUtil;
 
-  public Mono<RegisterResponse> register(UserDto dto) {
-    return userRepository.findByEmail(dto.getEmail())
-            .flatMap(u -> Mono.<RegisterResponse>error(new DuplicateUserException(dto.getEmail())))
-            .switchIfEmpty(Mono.defer(() -> userRepository.save(
-                    User.builder()
-                            .username(dto.getUsername())
-                            .email(dto.getEmail())
-                            .password(passwordEncoder.encode(dto.getPassword()))
-                            .role(Role.USER)
-                            .createdAt(LocalDateTime.now())
-                            .build()
-            ).map(saved -> new RegisterResponse(saved.getEmail(), "회원가입 완료"))));
+  public Mono<RegisterResponse> register(RegisterRequest dto) {
+    return emailVerificationService.verifyCode(dto.getEmail(), dto.getVerificationCode())
+            .flatMap(isValid -> {
+              if (!isValid) {
+                return Mono.error(new InvalidVerificationCodeException());
+              }
+
+              return userRepository.existsByEmail(dto.getEmail())
+                      .flatMap(exists -> {
+                        if (exists) {
+                          return Mono.error(new DuplicateUserException(dto.getEmail()));
+                        }
+
+                        return userRepository.save(
+                                User.builder()
+                                        .username(dto.getUsername())
+                                        .email(dto.getEmail())
+                                        .password(passwordEncoder.encode(dto.getPassword()))
+                                        .role(Role.USER)
+                                        .createdAt(LocalDateTime.now())
+                                        .build()
+                        ).map(saved -> new RegisterResponse(saved.getEmail(), "회원가입 완료"));
+                      });
+            });
   }
 
   public Mono<TokenResponse> login(LoginRequestDto dto) {
