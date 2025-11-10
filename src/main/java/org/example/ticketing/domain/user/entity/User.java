@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.example.ticketing.domain.user.enums.Role;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -25,5 +26,6 @@ public class User {
   private Role role;
 
   @CreatedDate
+  @Column("created_at")
   private LocalDateTime createdAt;
 }
