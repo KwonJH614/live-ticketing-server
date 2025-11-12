@@ -35,10 +35,10 @@ public class UserService {
                 return Mono.error(new InvalidVerificationCodeException());
               }
 
-              return userRepository.existsByEmail(dto.getEmail())
+              return userRepository.existsByUsername(dto.getUsername())
                       .flatMap(exists -> {
                         if (exists) {
-                          return Mono.error(new DuplicateUserException(dto.getEmail()));
+                          return Mono.error(new DuplicateUserException(dto.getUsername()));
                         }
 
                         return userRepository.save(

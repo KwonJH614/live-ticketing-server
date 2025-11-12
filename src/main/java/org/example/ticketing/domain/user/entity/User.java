@@ -20,8 +20,8 @@ import java.time.LocalDateTime;
 public class User {
   @Id
   private Long id;
-  private String email;
   private String username;
+  private String email;
   private String password;
   private Role role;
 
