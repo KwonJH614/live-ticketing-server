@@ -1,13 +1,14 @@
 package org.example.ticketing.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.common.exception.*;
+import org.example.ticketing.common.exception.UserNotFoundException;
 import org.example.ticketing.domain.user.dto.LoginRequestDto;
 import org.example.ticketing.domain.user.dto.RegisterResponse;
 import org.example.ticketing.domain.user.dto.TokenResponse;
 import org.example.ticketing.domain.user.dto.RegisterRequest;
 import org.example.ticketing.domain.user.entity.User;
 import org.example.ticketing.domain.user.enums.Role;
+import org.example.ticketing.domain.user.exception.*;
 import org.example.ticketing.domain.user.repository.UserRepository;
 import org.example.ticketing.security.JwtUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

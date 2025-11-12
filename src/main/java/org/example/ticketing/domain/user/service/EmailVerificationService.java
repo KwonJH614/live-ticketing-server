@@ -2,7 +2,7 @@ package org.example.ticketing.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.ticketing.common.exception.EmailSendException;
+import org.example.ticketing.domain.user.exception.EmailSendException;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

@@ -1,5 +1,6 @@
-package org.example.ticketing.common.exception;
+package org.example.ticketing.domain.user.exception;
 
+import org.example.ticketing.common.exception.CustomException;
 import org.springframework.http.HttpStatus;
 
 public class InvalidVerificationCodeException extends CustomException {
