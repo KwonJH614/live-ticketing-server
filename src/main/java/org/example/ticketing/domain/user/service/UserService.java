@@ -1,10 +1,7 @@
 package org.example.ticketing.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.common.exception.DuplicateUserException;
-import org.example.ticketing.common.exception.InvalidPasswordException;
-import org.example.ticketing.common.exception.InvalidVerificationCodeException;
-import org.example.ticketing.common.exception.UserNotFoundException;
+import org.example.ticketing.common.exception.*;
 import org.example.ticketing.domain.user.dto.LoginRequestDto;
 import org.example.ticketing.domain.user.dto.RegisterResponse;
 import org.example.ticketing.domain.user.dto.TokenResponse;
@@ -34,25 +31,31 @@ public class UserService {
               if (!isValid) {
                 return Mono.error(new InvalidVerificationCodeException());
               }
-
-              return userRepository.existsByUsername(dto.getUsername())
-                      .flatMap(exists -> {
-                        if (exists) {
-                          return Mono.error(new DuplicateUserException(dto.getUsername()));
+              return userRepository.existsByEmail(dto.getEmail())
+                      .flatMap(emailExists -> {
+                        if (emailExists) {
+                          return Mono.error(new DuplicateEmailException(dto.getEmail()));
                         }
+                        return userRepository.existsByUsername(dto.getUsername())
+                                .flatMap(usernameExists -> {
+                                  if (usernameExists) {
+                                    return Mono.error(new DuplicateUsernameException(dto.getUsername()));
+                                  }
+                                  User user = User.builder()
+                                          .username(dto.getUsername())
+                                          .email(dto.getEmail())
+                                          .password(passwordEncoder.encode(dto.getPassword()))
+                                          .role(Role.USER)
+                                          .createdAt(LocalDateTime.now())
+                                          .build();
 
-                        return userRepository.save(
-                                User.builder()
-                                        .username(dto.getUsername())
-                                        .email(dto.getEmail())
-                                        .password(passwordEncoder.encode(dto.getPassword()))
-                                        .role(Role.USER)
-                                        .createdAt(LocalDateTime.now())
-                                        .build()
-                        ).map(saved -> new RegisterResponse(saved.getEmail(), "회원가입 완료"));
+                                  return userRepository.save(user)
+                                          .map(saved -> new RegisterResponse(saved.getEmail(), "회원가입 완료"));
+                                });
                       });
             });
   }
+
 
   public Mono<TokenResponse> login(LoginRequestDto dto) {
     return userRepository.findByUsername(dto.getUsername())
