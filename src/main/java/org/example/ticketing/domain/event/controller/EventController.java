@@ -2,16 +2,13 @@ package org.example.ticketing.domain.event.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.ticketing.domain.event.dto.*;
 import org.example.ticketing.global.response.ApiResponse;
-import org.example.ticketing.domain.event.dto.CreateEventRequestDto;
-import org.example.ticketing.domain.event.dto.CreateEventResponseDto;
 import org.example.ticketing.domain.event.service.EventService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @Controller
@@ -26,6 +23,23 @@ public class EventController {
           Authentication authentication
   ) {
     return eventService.createEvent(createEventRequestDto, authentication.getName())
+            .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
+  }
+
+  @GetMapping("/{id}")
+  public Mono<ResponseEntity<ApiResponse<EventDetailDto>>> getEventDetail(
+          @PathVariable Long id
+  ) {
+    return eventService.getEventDetail(id)
+            .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
+  }
+
+  @GetMapping
+  public Mono<ResponseEntity<ApiResponse<PageResponse<EventListDto>>>> getAllEvent(
+          @RequestParam(defaultValue = "0") int page,
+          @RequestParam(defaultValue = "10") int size
+  ) {
+    return eventService.getEvents(page, size)
             .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
   }
 }

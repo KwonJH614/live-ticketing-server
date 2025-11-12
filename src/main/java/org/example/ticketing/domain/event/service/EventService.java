@@ -1,11 +1,12 @@
 package org.example.ticketing.domain.event.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ticketing.domain.event.dto.*;
+import org.example.ticketing.domain.event.exception.EventNotFoundException;
 import org.example.ticketing.domain.event.exception.InvalidEventTimeException;
 import org.example.ticketing.domain.event.exception.PastEventDateException;
+import org.example.ticketing.domain.event.repository.EventCustomRepository;
 import org.example.ticketing.global.exception.UserNotFoundException;
-import org.example.ticketing.domain.event.dto.CreateEventRequestDto;
-import org.example.ticketing.domain.event.dto.CreateEventResponseDto;
 import org.example.ticketing.domain.event.entity.Event;
 import org.example.ticketing.domain.event.repository.EventRepository;
 import org.example.ticketing.domain.user.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class EventService {
   private final EventRepository eventRepository;
   private final UserRepository userRepository;
   private final TransactionalOperator txOperator;
+  private final EventCustomRepository eventCustomRepository;
 
   public Mono<CreateEventResponseDto> createEvent(CreateEventRequestDto dto, String username) {
     return Mono.just(dto)
@@ -62,5 +65,41 @@ public class EventService {
                     savedEvent.getTitle()
             ))
             .as(txOperator::transactional);
+  }
+
+  public Mono<EventDetailDto> getEventDetail(Long id) {
+    return eventRepository.findById(id)
+            .switchIfEmpty(Mono.error(new EventNotFoundException()))
+            .map(event -> EventDetailDto.builder()
+                    .id(event.getId())
+                    .title(event.getTitle())
+                    .description(event.getDescription())
+                    .startTime(event.getStartTime())
+                    .endTime(event.getEndTime())
+                    .venue(event.getVenue())
+                    .price(event.getPrice())
+                    .createdAt(event.getCreatedAt())
+                    .build()
+              );
+  }
+
+  public Mono<PageResponse<EventListDto>> getEvents(int page, int size) {
+    return Mono.zip(
+            eventCustomRepository.countAll(),
+            eventCustomRepository.findAllPaged(page, size).collectList()
+    ).map(tuple -> {
+      long totalCount = tuple.getT1();
+      List<Event> events = tuple.getT2();
+
+      List<EventListDto> content = events.stream()
+              .map(event -> new EventListDto(
+                      event.getTitle(),
+                      event.getVenue(),
+                      event.getStartTime()
+              ))
+              .toList();
+
+      return new PageResponse<>(content, page, size, totalCount);
+    });
   }
 }
