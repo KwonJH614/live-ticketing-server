@@ -17,9 +17,9 @@ public class JwtUtil {
   @Value("${spring.expiration-ms}")
   private Long expirationMs;
 
-  public String generateToken(String email, String role) {
+  public String generateToken(String username, String role) {
     return Jwts.builder()
-            .setSubject(email)
+            .setSubject(username)
             .claim("role", role)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + expirationMs))

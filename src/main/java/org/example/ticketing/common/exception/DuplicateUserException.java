@@ -3,7 +3,7 @@ package org.example.ticketing.common.exception;
 import org.springframework.http.HttpStatus;
 
 public class DuplicateUserException extends CustomException{
-  public DuplicateUserException(String email) {
-    super("이미 존재하는 email : " + email, HttpStatus.CONFLICT);
+  public DuplicateUserException(String username) {
+    super("이미 존재하는 username : " + username, HttpStatus.CONFLICT);
   }
 }
