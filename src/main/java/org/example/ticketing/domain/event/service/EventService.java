@@ -1,6 +1,7 @@
 package org.example.ticketing.domain.event.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ticketing.domain.event.exception.InvalidEventTimeException;
 import org.example.ticketing.domain.event.exception.PastEventDateException;
 import org.example.ticketing.global.exception.UserNotFoundException;
 import org.example.ticketing.domain.event.dto.CreateEventRequestDto;
@@ -38,6 +39,12 @@ public class EventService {
                         return Mono.just(request);
                       })
             )
+            .flatMap(request -> {
+                if (request.getStartTime().isAfter(request.getEndTime())) {
+                    return Mono.error(new InvalidEventTimeException());
+                }
+                return Mono.just(request);
+            })
             .flatMap(request -> {
               Event event = Event.builder()
                       .title(request.getTitle())
