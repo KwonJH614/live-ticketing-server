@@ -51,7 +51,7 @@ public class UserService {
                                           .build();
 
                                   return userRepository.save(user)
-                                          .map(saved -> new RegisterResponse(saved.getEmail(), "회원가입 완료"));
+                                          .map(saved -> new RegisterResponse(saved.getUsername(), "회원가입 완료"));
                                 });
                       });
             });
