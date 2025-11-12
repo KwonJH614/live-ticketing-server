@@ -9,6 +9,7 @@ import org.example.ticketing.domain.event.entity.Event;
 import org.example.ticketing.domain.event.repository.EventRepository;
 import org.example.ticketing.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 public class EventService {
   private final EventRepository eventRepository;
   private final UserRepository userRepository;
+  private final TransactionalOperator txOperator;
 
   public Mono<CreateEventResponseDto> createEvent(CreateEventRequestDto dto, String username) {
     return Mono.just(dto)
@@ -51,6 +53,7 @@ public class EventService {
             .map(savedEvent -> new CreateEventResponseDto(
                     savedEvent.getId(),
                     savedEvent.getTitle()
-            ));
+            ))
+            .as(txOperator::transactional);
   }
 }
