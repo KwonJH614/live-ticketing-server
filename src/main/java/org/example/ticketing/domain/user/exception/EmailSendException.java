@@ -1,6 +1,6 @@
 package org.example.ticketing.domain.user.exception;
 
-import org.example.ticketing.common.exception.CustomException;
+import org.example.ticketing.global.exception.CustomException;
 import org.springframework.http.HttpStatus;
 
 public class EmailSendException extends CustomException {

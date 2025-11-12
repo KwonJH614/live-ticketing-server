@@ -1,7 +1,7 @@
 package org.example.ticketing.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.common.exception.UserNotFoundException;
+import org.example.ticketing.global.exception.UserNotFoundException;
 import org.example.ticketing.domain.user.dto.LoginRequestDto;
 import org.example.ticketing.domain.user.dto.RegisterResponse;
 import org.example.ticketing.domain.user.dto.TokenResponse;

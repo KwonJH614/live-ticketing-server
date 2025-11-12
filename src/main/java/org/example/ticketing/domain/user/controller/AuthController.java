@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.common.response.ApiResponse;
+import org.example.ticketing.global.response.ApiResponse;
 import org.example.ticketing.domain.user.dto.LoginRequestDto;
 import org.example.ticketing.domain.user.dto.RegisterResponse;
 import org.example.ticketing.domain.user.dto.TokenResponse;

@@ -1,6 +1,6 @@
-package org.example.ticketing.common.exception;
+package org.example.ticketing.global.exception;
 
-import org.example.ticketing.common.response.ApiResponse;
+import org.example.ticketing.global.response.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,4 @@
-package org.example.ticketing.common.exception;
+package org.example.ticketing.global.exception;
 
 import org.springframework.http.HttpStatus;
 

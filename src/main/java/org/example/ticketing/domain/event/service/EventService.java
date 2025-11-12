@@ -2,7 +2,7 @@ package org.example.ticketing.domain.event.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.event.exception.PastEventDateException;
-import org.example.ticketing.common.exception.UserNotFoundException;
+import org.example.ticketing.global.exception.UserNotFoundException;
 import org.example.ticketing.domain.event.dto.CreateEventRequestDto;
 import org.example.ticketing.domain.event.dto.CreateEventResponseDto;
 import org.example.ticketing.domain.event.entity.Event;

@@ -2,10 +2,9 @@ package org.example.ticketing.domain.event.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.common.response.ApiResponse;
+import org.example.ticketing.global.response.ApiResponse;
 import org.example.ticketing.domain.event.dto.CreateEventRequestDto;
 import org.example.ticketing.domain.event.dto.CreateEventResponseDto;
-import org.example.ticketing.domain.event.repository.EventRepository;
 import org.example.ticketing.domain.event.service.EventService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
