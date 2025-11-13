@@ -41,9 +41,9 @@ public class SecurityConfig {
             .authorizeExchange(exchanges -> exchanges
                     .pathMatchers(HttpMethod.POST, "/api/users/**").permitAll()
                     .pathMatchers(HttpMethod.POST, "/api/event").hasRole("ADMIN")
-                    .pathMatchers(HttpMethod.PUT, "/api/event").hasRole("ADMIN")
-                    .pathMatchers(HttpMethod.DELETE, "/api/event").hasRole("ADMIN")
-                    .pathMatchers(HttpMethod.GET, "/api/event").permitAll()
+                    .pathMatchers(HttpMethod.PUT, "/api/event/**").hasRole("ADMIN")
+                    .pathMatchers(HttpMethod.DELETE, "/api/event/**").hasRole("ADMIN")
+                    .pathMatchers(HttpMethod.GET, "/api/event/**").permitAll()
                     .pathMatchers("/health").permitAll()
                     .anyExchange().authenticated()
             )
