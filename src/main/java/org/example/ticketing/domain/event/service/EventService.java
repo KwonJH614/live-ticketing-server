@@ -102,4 +102,25 @@ public class EventService {
       return new PageResponse<>(content, page, size, totalCount);
     });
   }
+
+  public Mono<UpdateEventResponseDto> updateEvent(Long eventId, UpdateEventRequestDto dto) {
+    return eventRepository.findById(eventId)
+            .switchIfEmpty(Mono.error(new EventNotFoundException()))
+            .flatMap(event -> {
+              event.setTitle(dto.getTitle());
+              event.setDescription(dto.getDescription());
+              event.setStartTime(dto.getStartTime());
+              event.setEndTime(dto.getEndTime());
+              event.setVenue(dto.getVenue());
+              event.setPrice(dto.getPrice());
+              event.setUpdatedAt(LocalDateTime.now());
+
+              return eventRepository.save(event);
+            })
+            .map(event -> UpdateEventResponseDto.builder()
+                    .title(event.getTitle())
+                    .updatedAt(event.getUpdatedAt())
+                    .build()
+            );
+  }
 }

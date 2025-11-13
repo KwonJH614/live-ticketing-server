@@ -17,17 +17,18 @@ import java.time.LocalDateTime;
 @Builder
 public class Event {
 
-    @Id
-    private Long id;
-
-    private String title;
-    private String description;
-    @Column("start_time")
-    private LocalDateTime startTime;
-    @Column("end_time")
-    private LocalDateTime endTime;
-    private String venue;
-    private int price;
-    @Column("created_at")
-    private LocalDateTime createdAt;
+  @Id
+  private Long id;
+  private String title;
+  private String description;
+  @Column("start_time")
+  private LocalDateTime startTime;
+  @Column("end_time")
+  private LocalDateTime endTime;
+  private String venue;
+  private int price;
+  @Column("created_at")
+  private LocalDateTime createdAt;
+  @Column("updated_at")
+  private LocalDateTime updatedAt;
 }
