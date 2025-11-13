@@ -42,4 +42,13 @@ public class EventController {
     return eventService.getEvents(page, size)
             .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
   }
+
+  @PutMapping("/{id}")
+  public Mono<ResponseEntity<ApiResponse<UpdateEventResponseDto>>> updateEvent(
+          @PathVariable Long id,
+          @Valid @RequestBody UpdateEventRequestDto updateEventRequestDto
+  ) {
+    return eventService.updateEvent(id, updateEventRequestDto)
+            .map(response ->  ResponseEntity.ok(ApiResponse.success(response)));
+  }
 }
