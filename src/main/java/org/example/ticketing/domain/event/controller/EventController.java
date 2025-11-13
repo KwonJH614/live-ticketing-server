@@ -51,4 +51,12 @@ public class EventController {
     return eventService.updateEvent(id, updateEventRequestDto)
             .map(response ->  ResponseEntity.ok(ApiResponse.success(response)));
   }
+
+  @DeleteMapping("/{id}")
+  public Mono<ResponseEntity<ApiResponse<DeleteEventResponseDto>>> deleteEvent(
+          @PathVariable Long id
+  ) {
+    return eventService.deleteEvent(id)
+            .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
+  }
 }

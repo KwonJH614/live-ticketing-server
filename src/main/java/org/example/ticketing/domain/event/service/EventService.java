@@ -123,4 +123,11 @@ public class EventService {
                     .build()
             );
   }
+
+  public Mono<DeleteEventResponseDto> deleteEvent(Long eventId) {
+    return eventRepository.findById(eventId)
+            .switchIfEmpty(Mono.error(new EventNotFoundException()))
+            .flatMap(event -> eventRepository.delete(event)
+                    .then(Mono.just(new DeleteEventResponseDto(eventId, event.getTitle(), "이벤트가 삭제되었습니다"))));
+  }
 }
