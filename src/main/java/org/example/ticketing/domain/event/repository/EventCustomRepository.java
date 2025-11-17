@@ -18,7 +18,7 @@ public class EventCustomRepository {
   public Flux<Event> findAllPaged(int page, int size) {
     int offset = page * size;
     String sql = """
-            SELECT * FROM events
+            SELECT id, title, start_time, end_time,venue, price, created_at FROM events
             ORDER BY created_at DESC
             LIMIT :size OFFSET :offset
             """;
@@ -29,7 +29,6 @@ public class EventCustomRepository {
             .map((row, meta) -> Event.builder()
                     .id(row.get("id", Long.class))
                     .title(row.get("title", String.class))
-                    .description(row.get("description", String.class))
                     .startTime(row.get("start_time", LocalDateTime.class))
                     .endTime(row.get("end_time", LocalDateTime.class))
                     .venue(row.get("venue", String.class))
