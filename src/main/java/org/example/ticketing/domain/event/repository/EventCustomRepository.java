@@ -19,7 +19,7 @@ public class EventCustomRepository {
     int offset = page * size;
     String sql = """
             SELECT id, title, start_time, end_time,venue, price, created_at FROM events
-            ORDER BY created_at DESC
+            ORDER BY id ASC
             LIMIT :size OFFSET :offset
             """;
 
