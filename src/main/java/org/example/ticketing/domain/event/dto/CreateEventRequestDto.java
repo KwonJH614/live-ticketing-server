@@ -25,4 +25,10 @@ public class CreateEventRequestDto {
   @NotNull(message = "가격을 입력해주세요")
   @Min(value = 0, message = "가격은 0원 이상이어야합니다")
   private int price;
+  @NotNull(message = "행을 입력해주세요")
+  @Min(value = 1, message = "행은 1 이상이어야합니다")
+  private int row;
+  @NotNull(message = "좌석 수를 입력해주세요")
+  @Min(value = 1, message = "좌석은 1석 이상이어야합니다")
+  private int column;
 }
