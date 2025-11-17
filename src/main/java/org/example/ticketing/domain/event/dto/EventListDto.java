@@ -10,7 +10,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventListDto {
+  private Long id;
   private String title;
+  private LocalDateTime startTime;
+  private LocalDateTime endTime;
   private String venue;
+  private int price;
   private LocalDateTime createdAt;
 }
