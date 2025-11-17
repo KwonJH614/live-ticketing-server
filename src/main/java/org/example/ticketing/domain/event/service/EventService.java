@@ -6,6 +6,7 @@ import org.example.ticketing.domain.event.exception.EventNotFoundException;
 import org.example.ticketing.domain.event.exception.InvalidEventTimeException;
 import org.example.ticketing.domain.event.exception.PastEventDateException;
 import org.example.ticketing.domain.event.repository.EventCustomRepository;
+import org.example.ticketing.domain.seat.service.SeatService;
 import org.example.ticketing.global.exception.UserNotFoundException;
 import org.example.ticketing.domain.event.entity.Event;
 import org.example.ticketing.domain.event.repository.EventRepository;
@@ -24,6 +25,7 @@ public class EventService {
   private final UserRepository userRepository;
   private final TransactionalOperator txOperator;
   private final EventCustomRepository eventCustomRepository;
+  private final SeatService seatService;
 
   public Mono<CreateEventResponseDto> createEvent(CreateEventRequestDto dto, String username) {
     return Mono.just(dto)
@@ -60,6 +62,10 @@ public class EventService {
 
               return eventRepository.save(event);
             })
+            .flatMap(savedEvent ->
+                    seatService.createSeatsForEvent(savedEvent, dto)
+                            .then(Mono.just(savedEvent))
+                    )
             .map(savedEvent -> new CreateEventResponseDto(
                     savedEvent.getId(),
                     savedEvent.getTitle()
@@ -92,11 +98,15 @@ public class EventService {
       List<Event> events = tuple.getT2();
 
       List<EventListDto> content = events.stream()
-              .map(event -> new EventListDto(
-                      event.getTitle(),
-                      event.getVenue(),
-                      event.getStartTime()
-              ))
+              .map(event -> EventListDto.builder()
+                      .id(event.getId())
+                      .title(event.getTitle())
+                      .startTime(event.getStartTime())
+                      .endTime(event.getEndTime())
+                      .venue(event.getVenue())
+                      .price(event.getPrice())
+                      .createdAt(event.getCreatedAt())
+                      .build())
               .toList();
 
       return new PageResponse<>(content, page, size, totalCount);
