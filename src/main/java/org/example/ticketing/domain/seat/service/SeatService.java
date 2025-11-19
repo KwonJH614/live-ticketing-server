@@ -1,10 +1,11 @@
 package org.example.ticketing.domain.seat.service;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.event.dto.CreateEventRequestDto;
 import org.example.ticketing.domain.event.entity.Event;
+import org.example.ticketing.domain.event.exception.EventNotFoundException;
+import org.example.ticketing.domain.event.repository.EventRepository;
+import org.example.ticketing.domain.seat.dto.SeatListDto;
 import org.example.ticketing.domain.seat.entity.Seat;
 import org.example.ticketing.domain.seat.repository.SeatRepository;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SeatService {
   private final SeatRepository seatRepository;
+  private final EventRepository eventRepository;
 
   public Mono<Void> createSeatsForEvent(Event event, CreateEventRequestDto dto) {
     List<Seat> seats = generateSeats(event.getId(), dto.getRow(), dto.getColumn());
@@ -40,5 +42,24 @@ public class SeatService {
     }
 
     return seats;
+  }
+
+  public Mono<List<SeatListDto>> getSeats(Long eventId) {
+    return eventRepository.findById(eventId)
+            .switchIfEmpty(Mono.error(new EventNotFoundException()))
+            .then(
+                    seatRepository.findAllByEventId(eventId)
+                            .collectList()
+                            .map(
+                                    seats ->
+                                            seats.stream()
+                                                    .map(seat -> SeatListDto.builder()
+                                                            .id(seat.getId())
+                                                            .seatNumber(seat.getSeatNumber())
+                                                            .isReserved(seat.isReserved())
+                                                            .build())
+                                                    .toList()
+                            )
+            );
   }
 }
