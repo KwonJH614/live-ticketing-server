@@ -17,9 +17,10 @@ public class JwtUtil {
   @Value("${spring.expiration-ms}")
   private Long expirationMs;
 
-  public String generateToken(String username, String role) {
+  public String generateToken(Long userId, String username, String role) {
     return Jwts.builder()
             .setSubject(username)
+            .claim("userId", userId)
             .claim("role", role)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
@@ -27,7 +28,16 @@ public class JwtUtil {
             .compact();
   }
 
-  public String getEmail(String token) {
+  public Long getUserId(String token) {
+    return Jwts.parserBuilder()
+            .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .get("userId", Long.class);
+  }
+
+  public String getUsername(String token) {
     return Jwts.parserBuilder()
             .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
             .build()
