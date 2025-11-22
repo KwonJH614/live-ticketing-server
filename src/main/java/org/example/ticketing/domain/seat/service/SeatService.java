@@ -8,9 +8,11 @@ import org.example.ticketing.domain.event.repository.EventRepository;
 import org.example.ticketing.domain.seat.dto.SeatListDto;
 import org.example.ticketing.domain.seat.entity.Seat;
 import org.example.ticketing.domain.seat.repository.SeatRepository;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,7 @@ import java.util.List;
 public class SeatService {
   private final SeatRepository seatRepository;
   private final EventRepository eventRepository;
+  private final ReactiveStringRedisTemplate redis;
 
   public Mono<Void> createSeatsForEvent(Event event, CreateEventRequestDto dto) {
     List<Seat> seats = generateSeats(event.getId(), dto.getRow(), dto.getColumn());
@@ -61,5 +64,28 @@ public class SeatService {
                                                     .toList()
                             )
             );
+  }
+
+  public Mono<Boolean> holdSeat(Long eventId, String seatNumber, Long userId) {
+    String key = "eventId : " + eventId + " seatNumber : " + seatNumber;
+    return redis.opsForValue().set(key, String.valueOf(userId), Duration.ofMinutes(3));
+  }
+
+  public Mono<Boolean> releaseSeat(Long eventId, String seatNumber) {
+    String key = "eventId : " + eventId + " seatNumber : " + seatNumber;
+    return redis.delete(key).map(count -> count > 0);
+  }
+
+  public Mono<Seat> confirmSeat(Long seatId) {
+    return seatRepository.findById(seatId)
+            .flatMap(seat -> {
+              seat.setReserved(true);
+              return seatRepository.save(seat);
+            });
+  }
+
+  public Mono<Boolean> isHeld(Long eventId, String seatNumber) {
+    String key = "eventId : " + eventId + " seatNumber : " + seatNumber;
+    return redis.hasKey(key);
   }
 }

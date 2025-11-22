@@ -62,12 +62,15 @@ public class SecurityConfig {
 
         try {
           if (jwtUtil.validateToken(token)) {
-            String email = jwtUtil.getEmail(token);
+            String username = jwtUtil.getUsername(token);
             String role = jwtUtil.getRole(token);
+            Long userId = jwtUtil.getUserId(token);
 
-            if (email != null && !email.isEmpty() && role != null && !role.isEmpty()) {
+            if (username != null && !username.isEmpty() && role != null && !role.isEmpty()) {
+              CustomUserPrincipal principal = new CustomUserPrincipal(userId, username);
+
               AbstractAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                      email, null,
+                      principal, null,
                       Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
               );
 
