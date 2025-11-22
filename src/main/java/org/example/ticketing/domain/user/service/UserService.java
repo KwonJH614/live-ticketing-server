@@ -61,9 +61,19 @@ public class UserService {
   public Mono<TokenResponse> login(LoginRequestDto dto) {
     return userRepository.findByUsername(dto.getUsername())
             .switchIfEmpty(Mono.error(new UserNotFoundException(dto.getUsername())))
-            .flatMap(user -> passwordEncoder.matches(dto.getPassword(), user.getPassword())
-                    ? Mono.just(new TokenResponse(jwtUtil.generateToken(dto.getUsername(), user.getRole().name())))
-                    : Mono.error(new InvalidPasswordException()));
+            .flatMap(user ->
+                    passwordEncoder.matches(dto.getPassword(), user.getPassword())
+                            ? Mono.just(
+                            new TokenResponse(
+                                    jwtUtil.generateToken(
+                                            user.getId(),
+                                            user.getUsername(),
+                                            user.getRole().name()
+                                    )
+                            )
+                    )
+                            : Mono.error(new InvalidPasswordException())
+            );
   }
 
 }
