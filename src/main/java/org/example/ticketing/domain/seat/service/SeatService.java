@@ -35,13 +35,13 @@ public class SeatService {
     for (int i = 0; i < row; i++) {
       for (int j = 0; j < column; j++) {
         seats.add(Seat.builder()
-                .eventId(eventId)
-                .seatNumber(rowPrefix + String.valueOf(j))
-                .isReserved(false)
-                .build());
+            .eventId(eventId)
+            .seatNumber(rowPrefix + String.valueOf(j))
+            .isReserved(false)
+            .build());
       }
 
-        rowPrefix++;
+      rowPrefix++;
     }
 
     return seats;
@@ -49,43 +49,21 @@ public class SeatService {
 
   public Mono<List<SeatListDto>> getSeats(Long eventId) {
     return eventRepository.findById(eventId)
-            .switchIfEmpty(Mono.error(new EventNotFoundException()))
-            .then(
-                    seatRepository.findAllByEventId(eventId)
-                            .collectList()
-                            .map(
-                                    seats ->
-                                            seats.stream()
-                                                    .map(seat -> SeatListDto.builder()
-                                                            .id(seat.getId())
-                                                            .seatNumber(seat.getSeatNumber())
-                                                            .isReserved(seat.isReserved())
-                                                            .build())
-                                                    .toList()
-                            )
-            );
+        .switchIfEmpty(Mono.error(new EventNotFoundException()))
+        .then(
+            seatRepository.findAllByEventId(eventId)
+                .collectList()
+                .map(
+                    seats ->
+                        seats.stream()
+                            .map(seat -> SeatListDto.builder()
+                                .id(seat.getId())
+                                .seatNumber(seat.getSeatNumber())
+                                .isReserved(seat.isReserved())
+                                .build())
+                            .toList()
+                )
+        );
   }
 
-  public Mono<Boolean> holdSeat(Long eventId, String seatNumber, Long userId) {
-    String key = "eventId : " + eventId + " seatNumber : " + seatNumber;
-    return redis.opsForValue().set(key, String.valueOf(userId), Duration.ofMinutes(3));
-  }
-
-  public Mono<Boolean> releaseSeat(Long eventId, String seatNumber) {
-    String key = "eventId : " + eventId + " seatNumber : " + seatNumber;
-    return redis.delete(key).map(count -> count > 0);
-  }
-
-  public Mono<Seat> confirmSeat(Long seatId) {
-    return seatRepository.findById(seatId)
-            .flatMap(seat -> {
-              seat.setReserved(true);
-              return seatRepository.save(seat);
-            });
-  }
-
-  public Mono<Boolean> isHeld(Long eventId, String seatNumber) {
-    String key = "eventId : " + eventId + " seatNumber : " + seatNumber;
-    return redis.hasKey(key);
-  }
 }

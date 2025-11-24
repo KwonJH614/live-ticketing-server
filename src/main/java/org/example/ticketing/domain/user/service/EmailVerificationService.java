@@ -29,37 +29,37 @@ public class EmailVerificationService {
     String key = VERIFICATION_CODE_PREFIX + email;
 
     return redisTemplate.opsForValue()
-            .set(key, code, Duration.ofMinutes(EXPIRATION_MINUTES))
-            .flatMap(result -> {
-              if (Boolean.TRUE.equals(result)) {
-                return sendVerificationEmail(email, code);
-              }
-              return Mono.error(new EmailSendException("인증 코드 저장에 실패했습니다"));
-            })
-            .doOnSuccess(v -> log.info("인증 코드가 {}로 전송되었습니다", email));
+        .set(key, code, Duration.ofMinutes(EXPIRATION_MINUTES))
+        .flatMap(result -> {
+          if (Boolean.TRUE.equals(result)) {
+            return sendVerificationEmail(email, code);
+          }
+          return Mono.error(new EmailSendException("인증 코드 저장에 실패했습니다"));
+        })
+        .doOnSuccess(v -> log.info("인증 코드가 {}로 전송되었습니다", email));
   }
 
   public Mono<Boolean> verifyCode(String email, String code) {
     String key = VERIFICATION_CODE_PREFIX + email;
 
     return redisTemplate.opsForValue()
-            .get(key)
-            .map(storedCode -> storedCode.equals(code))
-            .defaultIfEmpty(false)
-            .flatMap(isValid -> {
-              if (isValid) {
-                return redisTemplate.delete(key)
-                        .thenReturn(true);
-              }
-              return Mono.just(false);
-            })
-            .doOnNext(isValid -> {
-              if (isValid) {
-                log.info("이메일 {} 인증이 완료되었습니다.", email);
-              } else {
-                log.warn("이메일 {} 인증 실패 - 잘못된 코드: {}", email, code);
-              }
-            });
+        .get(key)
+        .map(storedCode -> storedCode.equals(code))
+        .defaultIfEmpty(false)
+        .flatMap(isValid -> {
+          if (isValid) {
+            return redisTemplate.delete(key)
+                .thenReturn(true);
+          }
+          return Mono.just(false);
+        })
+        .doOnNext(isValid -> {
+          if (isValid) {
+            log.info("이메일 {} 인증이 완료되었습니다.", email);
+          } else {
+            log.warn("이메일 {} 인증 실패 - 잘못된 코드: {}", email, code);
+          }
+        });
 
   }
 
@@ -70,13 +70,13 @@ public class EmailVerificationService {
         message.setTo(email);
         message.setSubject("티켓팅 서비스 이메일 인증");
         message.setText(String.format(
-                "안녕하세요!\n\n" +
-                        "티켓팅 서비스 회원가입을 위한 인증 코드입니다.\n\n" +
-                        "인증 코드: %s\n\n" +
-                        "이 코드는 %d분간 유효합니다.\n" +
-                        "본인이 요청하지 않았다면 이 이메일을 무시해주세요.\n\n" +
-                        "감사합니다.",
-                code, EXPIRATION_MINUTES
+            "안녕하세요!\n\n" +
+                "티켓팅 서비스 회원가입을 위한 인증 코드입니다.\n\n" +
+                "인증 코드: %s\n\n" +
+                "이 코드는 %d분간 유효합니다.\n" +
+                "본인이 요청하지 않았다면 이 이메일을 무시해주세요.\n\n" +
+                "감사합니다.",
+            code, EXPIRATION_MINUTES
         ));
 
         mailSender.send(message);

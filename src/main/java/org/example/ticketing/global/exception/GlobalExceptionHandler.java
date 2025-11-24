@@ -23,12 +23,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(WebExchangeBindException.class)
   public Mono<ResponseEntity<ApiResponse<Void>>> handleValidationException(WebExchangeBindException e) {
     String errorMessage = e.getBindingResult().getFieldErrors().stream()
-            .map(FieldError::getDefaultMessage)
-            .collect(Collectors.joining(", "));
+        .map(FieldError::getDefaultMessage)
+        .collect(Collectors.joining(", "));
     log.warn("Validation Exception: {}", errorMessage);
     return Mono.just(ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponse.fail(errorMessage)));
+        .status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.fail(errorMessage)));
   }
 
   // CustomException 처리
@@ -36,8 +36,8 @@ public class GlobalExceptionHandler {
   public Mono<ResponseEntity<ApiResponse<Void>>> handleCustomException(CustomException e) {
     log.warn("Business Exception: {}", e.getMessage());
     return Mono.just(ResponseEntity
-            .status(e.getStatus())
-            .body(ApiResponse.fail(e.getMessage())));
+        .status(e.getStatus())
+        .body(ApiResponse.fail(e.getMessage())));
   }
 
   // BAD_REQUEST 처리
@@ -45,8 +45,8 @@ public class GlobalExceptionHandler {
   public Mono<ResponseEntity<ApiResponse<Void>>> handleMissingRequestValueException(MissingRequestValueException e) {
     log.warn("Missing Request Parameter: {}", e.getReason());
     return Mono.just(ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponse.fail("잘못된 요청입니다: " + e.getReason())));
+        .status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.fail("잘못된 요청입니다: " + e.getReason())));
   }
 
 
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
   public Mono<ResponseEntity<ApiResponse<Void>>> handleException(Exception e) {
     log.error("서버 에러 발생", e);
     return Mono.just(ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResponse.fail("서버 에러 발생")));
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(ApiResponse.fail("서버 에러 발생")));
   }
 }

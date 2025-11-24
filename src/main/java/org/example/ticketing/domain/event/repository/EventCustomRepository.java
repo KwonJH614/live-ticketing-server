@@ -18,30 +18,30 @@ public class EventCustomRepository {
   public Flux<Event> findAllPaged(int page, int size) {
     int offset = page * size;
     String sql = """
-            SELECT id, title, start_time, end_time,venue, price, created_at FROM events
-            ORDER BY id ASC
-            LIMIT :size OFFSET :offset
-            """;
+        SELECT id, title, start_time, end_time,venue, price, created_at FROM events
+        ORDER BY id ASC
+        LIMIT :size OFFSET :offset
+        """;
 
     return client.sql(sql)
-            .bind("size", size)
-            .bind("offset", offset)
-            .map((row, meta) -> Event.builder()
-                    .id(row.get("id", Long.class))
-                    .title(row.get("title", String.class))
-                    .startTime(row.get("start_time", LocalDateTime.class))
-                    .endTime(row.get("end_time", LocalDateTime.class))
-                    .venue(row.get("venue", String.class))
-                    .price(row.get("price", Integer.class))
-                    .createdAt(row.get("created_at", LocalDateTime.class))
-                    .build()
-            )
-            .all();
+        .bind("size", size)
+        .bind("offset", offset)
+        .map((row, meta) -> Event.builder()
+            .id(row.get("id", Long.class))
+            .title(row.get("title", String.class))
+            .startTime(row.get("start_time", LocalDateTime.class))
+            .endTime(row.get("end_time", LocalDateTime.class))
+            .venue(row.get("venue", String.class))
+            .price(row.get("price", Integer.class))
+            .createdAt(row.get("created_at", LocalDateTime.class))
+            .build()
+        )
+        .all();
   }
 
   public Mono<Long> countAll() {
     return client.sql("SELECT COUNT(*) AS cnt FROM events")
-            .map((row, meta) -> row.get("cnt", Long.class))
-            .one();
+        .map((row, meta) -> row.get("cnt", Long.class))
+        .one();
   }
 }

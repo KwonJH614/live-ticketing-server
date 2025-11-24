@@ -18,7 +18,7 @@ public class ApiResponse<T> {
   }
 
   public static <T> ApiResponse<T> success() {
-    return new ApiResponse<>(true, null ,HttpStatus.OK.name());
+    return new ApiResponse<>(true, null, HttpStatus.OK.name());
   }
 
   public static <T> ApiResponse<T> fail(String message) {

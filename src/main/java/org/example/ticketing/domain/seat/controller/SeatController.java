@@ -21,10 +21,9 @@ public class SeatController {
 
   @GetMapping("/{id}")
   public Mono<ResponseEntity<ApiResponse<List<SeatListDto>>>> getSeats(
-          @PathVariable Long id
-  )
-  {
+      @PathVariable Long id
+  ) {
     return seatService.getSeats(id)
-            .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
+        .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
   }
 }

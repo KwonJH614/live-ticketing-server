@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginRequestDto {
-
   @NotBlank(message = "username을 입력해주세요")
   private String username;
 

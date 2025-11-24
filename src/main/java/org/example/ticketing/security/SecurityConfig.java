@@ -34,22 +34,22 @@ public class SecurityConfig {
   @Bean
   public SecurityWebFilterChain securityWebFilterChain() {
     return ServerHttpSecurity.http()
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-            .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-            .authorizeExchange(exchanges -> exchanges
-                    .pathMatchers(HttpMethod.POST, "/api/users/**").permitAll()
-                    .pathMatchers(HttpMethod.POST, "/api/event").hasRole("ADMIN")
-                    .pathMatchers(HttpMethod.PUT, "/api/event/**").hasRole("ADMIN")
-                    .pathMatchers(HttpMethod.DELETE, "/api/event/**").hasRole("ADMIN")
-                    .pathMatchers(HttpMethod.GET, "/api/event/**").permitAll()
-                    .pathMatchers(HttpMethod.GET, "api/seat/**").permitAll()
-                    .pathMatchers("/health").permitAll()
-                    .anyExchange().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
-            .build();
+        .csrf(ServerHttpSecurity.CsrfSpec::disable)
+        .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+        .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+        .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+        .authorizeExchange(exchanges -> exchanges
+            .pathMatchers(HttpMethod.POST, "/api/users/**").permitAll()
+            .pathMatchers(HttpMethod.POST, "/api/event").hasRole("ADMIN")
+            .pathMatchers(HttpMethod.PUT, "/api/event/**").hasRole("ADMIN")
+            .pathMatchers(HttpMethod.DELETE, "/api/event/**").hasRole("ADMIN")
+            .pathMatchers(HttpMethod.GET, "/api/event/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "api/seat/**").permitAll()
+            .pathMatchers("/health").permitAll()
+            .anyExchange().authenticated()
+        )
+        .addFilterBefore(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
+        .build();
   }
 
   @Bean
@@ -70,12 +70,12 @@ public class SecurityConfig {
               CustomUserPrincipal principal = new CustomUserPrincipal(userId, username);
 
               AbstractAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                      principal, null,
-                      Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+                  principal, null,
+                  Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
               );
 
               return chain.filter(exchange)
-                      .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
+                  .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
             }
           }
         } catch (Exception e) {

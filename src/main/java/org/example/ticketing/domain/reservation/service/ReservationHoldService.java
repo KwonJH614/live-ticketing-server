@@ -24,42 +24,42 @@ public class ReservationHoldService {
     String value = "%s:%d:%d".formatted(token, userId, seatId);
 
     return seatRepository.findById(seatId)
-            .flatMap(seat -> {
-              if (seat.isReserved()) {
-                return Mono.error(new SeatAlreadyReservedException());
-              }
+        .flatMap(seat -> {
+          if (seat.isReserved()) {
+            return Mono.error(new SeatAlreadyReservedException());
+          }
 
-              return Mono.just(seat);
-            })
-            .then(
-                    redis.opsForValue()
-                            .setIfAbsent(key, value, Duration.ofMinutes(3))
-                            .flatMap(success -> {
-                              if(!success) {
-                                return Mono.error(new SeatAlreadyHeldException());
-                              }
-                              return Mono.just(token);
-                            })
-                            .map(t -> HoldResponseDto.builder()
-                                    .seatId(seatId)
-                                    .token(t)
-                                    .build())
-            );
+          return Mono.just(seat);
+        })
+        .then(
+            redis.opsForValue()
+                .setIfAbsent(key, value, Duration.ofMinutes(3))
+                .flatMap(success -> {
+                  if (!success) {
+                    return Mono.error(new SeatAlreadyHeldException());
+                  }
+                  return Mono.just(token);
+                })
+                .map(t -> HoldResponseDto.builder()
+                    .seatId(seatId)
+                    .token(t)
+                    .build())
+        );
   }
 
   public Mono<Boolean> validateHold(Long seatId, Long userId, String token) {
     String key = "seat:%d:hold".formatted(seatId);
     return redis.opsForValue()
-            .get(key)
-            .map(value -> {
-              if (value == null) return false;
-              String[] parts = value.split(":");
-              if (parts.length < 3) return false;
-              String storedToken = parts[0];
-              String storedUserId = parts[1];
-              return storedToken.equals(token) && storedUserId.equals(String.valueOf(userId));
-            })
-            .defaultIfEmpty(false);
+        .get(key)
+        .map(value -> {
+          if (value == null) return false;
+          String[] parts = value.split(":");
+          if (parts.length < 3) return false;
+          String storedToken = parts[0];
+          String storedUserId = parts[1];
+          return storedToken.equals(token) && storedUserId.equals(String.valueOf(userId));
+        })
+        .defaultIfEmpty(false);
   }
 
   public Mono<Void> releaseHold(Long seatId) {

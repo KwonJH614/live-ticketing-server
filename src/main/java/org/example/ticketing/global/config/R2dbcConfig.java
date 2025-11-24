@@ -11,13 +11,13 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 @Configuration
 @EnableR2dbcAuditing
 public class R2dbcConfig {
-    @Bean
-    public ReactiveTransactionManager transactionManager(ConnectionFactory connectionFactory) {
-        return new R2dbcTransactionManager(connectionFactory);
-    }
+  @Bean
+  public ReactiveTransactionManager transactionManager(ConnectionFactory connectionFactory) {
+    return new R2dbcTransactionManager(connectionFactory);
+  }
 
-    @Bean
-    public TransactionalOperator transactionalOperator(ReactiveTransactionManager transactionManager) {
-        return TransactionalOperator.create(transactionManager);
-    }
+  @Bean
+  public TransactionalOperator transactionalOperator(ReactiveTransactionManager transactionManager) {
+    return TransactionalOperator.create(transactionManager);
+  }
 }
