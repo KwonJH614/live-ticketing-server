@@ -60,10 +60,9 @@ public class UserService {
         });
   }
 
-
   public Mono<TokenResponse> login(LoginRequestDto dto) {
     return userRepository.findByUsername(dto.getUsername())
-        .switchIfEmpty(Mono.error(new UserNotFoundException(dto.getUsername())))
+        .switchIfEmpty(Mono.error(new UserNotFoundException()))
         .flatMap(user ->
             passwordEncoder.matches(dto.getPassword(), user.getPassword())
                 ? Mono.just(
