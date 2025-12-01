@@ -2,14 +2,18 @@ package org.example.ticketing.domain.reservation.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.reservation.dto.HoldResponseDto;
+import org.example.ticketing.domain.reservation.dto.ReservationListDto;
 import org.example.ticketing.domain.reservation.service.ReservationHoldService;
 import org.example.ticketing.domain.reservation.service.ReservationService;
+import org.example.ticketing.global.dto.PageResponse;
 import org.example.ticketing.global.response.ApiResponse;
 import org.example.ticketing.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reservation")
@@ -35,5 +39,15 @@ public class ReservationController {
   ) {
     return holdService.releaseHold(seatId, customUserPrincipal.userId(), token)
         .then(Mono.fromCallable(() -> ResponseEntity.ok(ApiResponse.success())));
+  }
+
+  @GetMapping
+  public Mono<ResponseEntity<ApiResponse<PageResponse<ReservationListDto>>>> getReservations(
+      @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(defaultValue = "0") int page
+  ) {
+    return reservationService.getReservations(customUserPrincipal.userId(), page, size)
+        .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
   }
 }

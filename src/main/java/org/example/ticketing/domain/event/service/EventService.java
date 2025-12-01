@@ -10,6 +10,7 @@ import org.example.ticketing.domain.event.repository.EventCustomRepository;
 import org.example.ticketing.domain.event.repository.EventRepository;
 import org.example.ticketing.domain.seat.service.SeatService;
 import org.example.ticketing.domain.user.repository.UserRepository;
+import org.example.ticketing.global.dto.PageResponse;
 import org.example.ticketing.global.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;

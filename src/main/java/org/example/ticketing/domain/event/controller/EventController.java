@@ -4,12 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.event.dto.*;
 import org.example.ticketing.domain.event.service.EventService;
+import org.example.ticketing.global.dto.PageResponse;
 import org.example.ticketing.global.response.ApiResponse;
 import org.example.ticketing.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 

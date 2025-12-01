@@ -5,17 +5,22 @@ import org.example.ticketing.domain.payment.entity.Payment;
 import org.example.ticketing.domain.payment.enums.PaymentStatus;
 import org.example.ticketing.domain.payment.repository.PaymentRepository;
 import org.example.ticketing.domain.payment.service.TossPaymentService;
+import org.example.ticketing.domain.reservation.dto.ReservationListDto;
 import org.example.ticketing.domain.reservation.entity.Reservation;
 import org.example.ticketing.domain.reservation.enums.Status;
 import org.example.ticketing.domain.reservation.exception.InvalidHoldException;
+import org.example.ticketing.domain.reservation.repository.ReservationCustomRepository;
 import org.example.ticketing.domain.reservation.repository.ReservationRepository;
 import org.example.ticketing.domain.seat.exception.SeatNotFoundException;
 import org.example.ticketing.domain.seat.repository.SeatRepository;
+import org.example.ticketing.domain.user.repository.UserRepository;
+import org.example.ticketing.global.dto.PageResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,7 @@ public class ReservationService {
   private final SeatRepository seatRepository;
   private final ReservationRepository reservationRepository;
   private final PaymentRepository paymentRepository;
+  private final ReservationCustomRepository reservationCustomRepository;
   private final TransactionalOperator txOperator;
 
   public Mono<Void> confirmReservation(Long seatId, Long userId, String token, String paymentKey, Long amount, String orderId) {
@@ -72,4 +78,15 @@ public class ReservationService {
         .then();
   }
 
+  public Mono<PageResponse<ReservationListDto>> getReservations(Long userId, int page, int size) {
+    return Mono.zip(
+        reservationCustomRepository.countByUserId(userId),
+        reservationCustomRepository.findAllPagedByUserId(userId, page, size).collectList()
+    ).map(tuple -> {
+      long totalCount = tuple.getT1();
+      List<ReservationListDto> reservations = tuple.getT2();
+
+      return new PageResponse<>(reservations, page, size, totalCount);
+    });
+  }
 }

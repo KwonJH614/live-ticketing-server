@@ -1,4 +1,4 @@
-package org.example.ticketing.domain.event.dto;
+package org.example.ticketing.global.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
