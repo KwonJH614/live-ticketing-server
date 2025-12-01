@@ -62,8 +62,16 @@ public class ReservationHoldService {
         .defaultIfEmpty(false);
   }
 
-  public Mono<Void> releaseHold(Long seatId) {
+  public Mono<Void> releaseHold(Long seatId, Long userId, String token) {
     String key = "seat:%d:hold".formatted(seatId);
-    return redis.delete(key).then();
+
+    return validateHold(seatId, userId, token)
+        .flatMap(isValid -> {
+          if (isValid) {
+            return redis.delete(key).then();
+          } else {
+            return Mono.error(new IllegalStateException("해당 홀드를 삭제할 권한이 없습니다."));
+          }
+        });
   }
 }

@@ -1,7 +1,6 @@
 package org.example.ticketing.domain.reservation.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.domain.reservation.dto.ConfirmRequestDto;
 import org.example.ticketing.domain.reservation.dto.HoldResponseDto;
 import org.example.ticketing.domain.reservation.service.ReservationHoldService;
 import org.example.ticketing.domain.reservation.service.ReservationService;
@@ -28,14 +27,13 @@ public class ReservationController {
         .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
   }
 
-  @PostMapping("/confirm/{seatId}")
-  public Mono<ResponseEntity<ApiResponse<Void>>> confirm(
+  @DeleteMapping("/{seatId}")
+  public Mono<ResponseEntity<ApiResponse<Void>>> releaseHold(
       @PathVariable Long seatId,
-      @RequestBody ConfirmRequestDto confirmRequestDto,
-      @AuthenticationPrincipal CustomUserPrincipal principal
+      @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+      @RequestParam String token
   ) {
-    return reservationService.confirmReservation(
-            seatId, principal.userId(), confirmRequestDto.getToken())
+    return holdService.releaseHold(seatId, customUserPrincipal.userId(), token)
         .then(Mono.fromCallable(() -> ResponseEntity.ok(ApiResponse.success())));
   }
 }

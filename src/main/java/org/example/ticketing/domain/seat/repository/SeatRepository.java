@@ -8,5 +8,5 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface SeatRepository extends ReactiveCrudRepository<Seat, Long> {
-  Flux<Seat> findAllByEventId(Long eventId);
+  Flux<Seat> findAllByEventIdOrderById(Long eventId);
 }

@@ -51,7 +51,7 @@ public class SeatService {
     return eventRepository.findById(eventId)
         .switchIfEmpty(Mono.error(new EventNotFoundException()))
         .then(
-            seatRepository.findAllByEventId(eventId)
+            seatRepository.findAllByEventIdOrderById(eventId)
                 .collectList()
                 .map(
                     seats ->
