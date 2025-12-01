@@ -5,13 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.event.dto.*;
 import org.example.ticketing.domain.event.service.EventService;
 import org.example.ticketing.global.response.ApiResponse;
+import org.example.ticketing.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-@Controller
+@RestController
 @RequestMapping("/api/event")
 @RequiredArgsConstructor
 public class EventController {
@@ -20,9 +22,9 @@ public class EventController {
   @PostMapping
   public Mono<ResponseEntity<ApiResponse<CreateEventResponseDto>>> createEvent(
       @Valid @RequestBody CreateEventRequestDto createEventRequestDto,
-      Authentication authentication
+      @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
   ) {
-    return eventService.createEvent(createEventRequestDto, authentication.getName())
+    return eventService.createEvent(createEventRequestDto, customUserPrincipal.username())
         .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
   }
 

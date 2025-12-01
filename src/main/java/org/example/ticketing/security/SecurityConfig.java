@@ -45,6 +45,17 @@ public class SecurityConfig {
             .pathMatchers(HttpMethod.DELETE, "/api/event/**").hasRole("ADMIN")
             .pathMatchers(HttpMethod.GET, "/api/event/**").permitAll()
             .pathMatchers(HttpMethod.GET, "api/seat/**").permitAll()
+            .pathMatchers(
+                "/index.html",
+                "/create-event.html",
+                "/event-detail.html",
+                "/login.html",
+                "/payment.html",
+                "/register.html",
+                "/payment-success.html",
+                "/js/api.js",
+                "/js/auth.js"
+                ).permitAll()
             .pathMatchers("/health").permitAll()
             .anyExchange().authenticated()
         )
