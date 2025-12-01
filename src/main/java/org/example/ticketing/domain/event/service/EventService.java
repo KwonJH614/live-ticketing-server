@@ -39,7 +39,7 @@ public class EventService {
             userRepository.existsByUsername(username)
                 .flatMap(exists -> {
                   if (!exists) {
-                    return Mono.error(new UserNotFoundException(username));
+                    return Mono.error(new UserNotFoundException());
                   }
                   return Mono.just(request);
                 })
