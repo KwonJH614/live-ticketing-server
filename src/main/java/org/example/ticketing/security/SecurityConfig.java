@@ -44,7 +44,7 @@ public class SecurityConfig {
             .pathMatchers(HttpMethod.PUT, "/api/event/**").hasRole("ADMIN")
             .pathMatchers(HttpMethod.DELETE, "/api/event/**").hasRole("ADMIN")
             .pathMatchers(HttpMethod.GET, "/api/event/**").permitAll()
-            .pathMatchers(HttpMethod.GET, "api/seat/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/api/seat/**").permitAll()
             .pathMatchers(
                 "/index.html",
                 "/create-event.html",
@@ -56,6 +56,10 @@ public class SecurityConfig {
                 "/js/api.js",
                 "/js/auth.js"
                 ).permitAll()
+            .pathMatchers("/swagger-ui.html").permitAll()
+            .pathMatchers("/swagger-ui/**").permitAll()
+            .pathMatchers("/v3/api-docs/**").permitAll()
+            .pathMatchers("/webjars/**").permitAll()
             .pathMatchers("/health").permitAll()
             .anyExchange().authenticated()
         )
