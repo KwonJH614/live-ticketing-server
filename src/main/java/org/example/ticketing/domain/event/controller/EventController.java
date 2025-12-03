@@ -3,11 +3,14 @@ package org.example.ticketing.domain.event.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.event.dto.*;
+import org.example.ticketing.domain.event.exception.QueueWaitingException;
+import org.example.ticketing.domain.event.service.EventQueueService;
 import org.example.ticketing.domain.event.service.EventService;
 import org.example.ticketing.global.dto.PageResponse;
 import org.example.ticketing.global.response.ApiResponse;
 import org.example.ticketing.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -17,6 +20,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class EventController {
   private final EventService eventService;
+  private final EventQueueService eventQueueService;
 
   @PostMapping
   public Mono<ResponseEntity<ApiResponse<CreateEventResponseDto>>> createEvent(
@@ -29,10 +33,20 @@ public class EventController {
 
   @GetMapping("/{id}")
   public Mono<ResponseEntity<ApiResponse<EventDetailDto>>> getEventDetail(
-      @PathVariable Long id
+      @PathVariable Long id,
+      @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
   ) {
-    return eventService.getEventDetail(id)
-        .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
+    return eventQueueService.getQueueStatus(id, customUserPrincipal.username())
+        .flatMap(status -> {
+          if (!status.isAvailable()) {
+            return Mono.error(new QueueWaitingException(status.getRank()));
+          }
+
+          return eventService.getEventDetail(id)
+              .flatMap(response ->
+                  eventQueueService.deleteQueue(response.getId(), customUserPrincipal.username())
+                      .thenReturn(ResponseEntity.ok(ApiResponse.success(response))));
+        });
   }
 
   @GetMapping
