@@ -31,7 +31,7 @@ public class EventService {
   public Mono<CreateEventResponseDto> createEvent(CreateEventRequestDto dto, String username) {
     return Mono.just(dto)
         .flatMap(request -> {
-          if (request.getStartTime().isBefore(LocalDateTime.now())) {
+          if (request.startTime().isBefore(LocalDateTime.now())) {
             return Mono.error(new PastEventDateException());
           }
           return Mono.just(request);
@@ -46,19 +46,19 @@ public class EventService {
                 })
         )
         .flatMap(request -> {
-          if (request.getStartTime().isAfter(request.getEndTime())) {
+          if (request.startTime().isAfter(request.endTime())) {
             return Mono.error(new InvalidEventTimeException());
           }
           return Mono.just(request);
         })
         .flatMap(request -> {
           Event event = Event.builder()
-              .title(request.getTitle())
-              .description(request.getDescription())
-              .startTime(request.getStartTime())
-              .endTime(request.getEndTime())
-              .venue(request.getVenue())
-              .price(request.getPrice())
+              .title(request.title())
+              .description(request.description())
+              .startTime(request.startTime())
+              .endTime(request.endTime())
+              .venue(request.venue())
+              .price(request.price())
               .build();
 
           return eventRepository.save(event);
@@ -118,12 +118,12 @@ public class EventService {
     return eventRepository.findById(eventId)
         .switchIfEmpty(Mono.error(new EventNotFoundException()))
         .flatMap(event -> {
-          event.setTitle(dto.getTitle());
-          event.setDescription(dto.getDescription());
-          event.setStartTime(dto.getStartTime());
-          event.setEndTime(dto.getEndTime());
-          event.setVenue(dto.getVenue());
-          event.setPrice(dto.getPrice());
+          event.setTitle(dto.title());
+          event.setDescription(dto.description());
+          event.setStartTime(dto.startTime());
+          event.setEndTime(dto.endTime());
+          event.setVenue(dto.venue());
+          event.setPrice(dto.price());
           event.setUpdatedAt(LocalDateTime.now());
 
           return eventRepository.save(event);

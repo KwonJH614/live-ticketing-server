@@ -44,9 +44,9 @@ public class ReservationService {
         .then(paymentService.approvePayment(paymentKey, orderId, amount))
         .flatMap(approval ->
             paymentRepository.save(Payment.builder()
-                .orderId(approval.getOrderId())
-                .paymentKey(approval.getPaymentKey())
-                .amount(approval.getAmount())
+                .orderId(approval.orderId())
+                .paymentKey(approval.paymentKey())
+                .amount(approval.amount())
                 .status(PaymentStatus.SUCCESS)
                 .createdAt(LocalDateTime.now())
                 .build())

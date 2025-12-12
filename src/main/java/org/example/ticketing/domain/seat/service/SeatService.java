@@ -21,10 +21,9 @@ import java.util.List;
 public class SeatService {
   private final SeatRepository seatRepository;
   private final EventRepository eventRepository;
-  private final ReactiveStringRedisTemplate redis;
 
   public Mono<Void> createSeatsForEvent(Event event, CreateEventRequestDto dto) {
-    List<Seat> seats = generateSeats(event.getId(), dto.getRow(), dto.getColumn());
+    List<Seat> seats = generateSeats(event.getId(), dto.row(), dto.column());
     return seatRepository.saveAll(seats).then();
   }
 

@@ -30,25 +30,25 @@ public class UserService {
   private final JwtUtil jwtUtil;
 
   public Mono<RegisterResponse> register(RegisterRequest dto) {
-    return emailVerificationService.verifyCode(dto.getEmail(), dto.getVerificationCode())
+    return emailVerificationService.verifyCode(dto.email(), dto.verificationCode())
         .flatMap(isValid -> {
           if (!isValid) {
             return Mono.error(new InvalidVerificationCodeException());
           }
-          return userRepository.existsByEmail(dto.getEmail())
+          return userRepository.existsByEmail(dto.email())
               .flatMap(emailExists -> {
                 if (emailExists) {
-                  return Mono.error(new DuplicateEmailException(dto.getEmail()));
+                  return Mono.error(new DuplicateEmailException(dto.email()));
                 }
-                return userRepository.existsByUsername(dto.getUsername())
+                return userRepository.existsByUsername(dto.username())
                     .flatMap(usernameExists -> {
                       if (usernameExists) {
-                        return Mono.error(new DuplicateUsernameException(dto.getUsername()));
+                        return Mono.error(new DuplicateUsernameException(dto.username()));
                       }
                       User user = User.builder()
-                          .username(dto.getUsername())
-                          .email(dto.getEmail())
-                          .password(passwordEncoder.encode(dto.getPassword()))
+                          .username(dto.username())
+                          .email(dto.email())
+                          .password(passwordEncoder.encode(dto.password()))
                           .role(Role.USER)
                           .createdAt(LocalDateTime.now())
                           .build();
@@ -61,10 +61,10 @@ public class UserService {
   }
 
   public Mono<TokenResponse> login(LoginRequestDto dto) {
-    return userRepository.findByUsername(dto.getUsername())
+    return userRepository.findByUsername(dto.username())
         .switchIfEmpty(Mono.error(new UserNotFoundException()))
         .flatMap(user ->
-            passwordEncoder.matches(dto.getPassword(), user.getPassword())
+            passwordEncoder.matches(dto.password(), user.getPassword())
                 ? Mono.just(
                 new TokenResponse(
                     jwtUtil.generateToken(

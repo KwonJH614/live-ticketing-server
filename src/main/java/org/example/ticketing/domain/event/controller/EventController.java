@@ -39,12 +39,12 @@ public class EventController {
     return eventQueueService.getQueueStatus(id, customUserPrincipal.username())
         .flatMap(status -> {
           if (!status.isAvailable()) {
-            return Mono.error(new QueueWaitingException(status.getRank()));
+            return Mono.error(new QueueWaitingException(status.rank()));
           }
 
           return eventService.getEventDetail(id)
               .flatMap(response ->
-                  eventQueueService.deleteQueue(response.getId(), customUserPrincipal.username())
+                  eventQueueService.deleteQueue(response.id(), customUserPrincipal.username())
                       .thenReturn(ResponseEntity.ok(ApiResponse.success(response))));
         });
   }

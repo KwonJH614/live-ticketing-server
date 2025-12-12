@@ -1,11 +1,9 @@
 package org.example.ticketing.domain.payment.dto;
 
-import lombok.Data;
-
-@Data
-public class ConfirmRequestDto {
-  private String token;
-  private String PaymentKey;
-  private Long amount;
-  private String orderId;
+public record ConfirmRequestDto(
+  String token,
+  String paymentKey,
+  Long amount,
+  String orderId
+) {
 }
