@@ -8,22 +8,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class RegisterRequest {
+public record RegisterRequest(
   @NotBlank(message = "username은 필수입니다")
-  private String username;
+  String username,
 
   @NotBlank(message = "email은 필수입니다")
-  private String email;
+  String email,
 
   @NotBlank(message = "password는 필수입니다")
   @Size(min = 6, message = "password는 최소 6자리 이상이어야 합니다")
-  private String password;
+  String password,
 
   @NotBlank(message = "인증코드는 필수입니다")
   @Pattern(regexp = "\\d{6}", message = "인증코드는 6자리 숫자여야합니다")
-  private String verificationCode;
-}
+  String verificationCode
+) {}

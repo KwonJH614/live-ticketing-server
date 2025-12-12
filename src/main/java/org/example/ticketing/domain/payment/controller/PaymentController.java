@@ -36,10 +36,10 @@ public class PaymentController {
     return reservationService.confirmReservation(
             seatId,
             principal.userId(),
-            confirmRequestDto.getToken(),
-            confirmRequestDto.getPaymentKey(),
-            confirmRequestDto.getAmount(),
-            confirmRequestDto.getOrderId()
+            confirmRequestDto.token(),
+            confirmRequestDto.paymentKey(),
+            confirmRequestDto.amount(),
+            confirmRequestDto.orderId()
         )
         .then(Mono.fromCallable(() -> ResponseEntity.ok(ApiResponse.success())));
   }

@@ -5,12 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class SeatListDto {
-  private Long id;
-  private String seatNumber;
-  private boolean isReserved;
-}
+public record SeatListDto(
+  Long id,
+  String seatNumber,
+  boolean isReserved
+) {}
