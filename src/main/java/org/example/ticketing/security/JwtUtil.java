@@ -51,10 +51,7 @@ public class JwtUtil {
 
   public boolean validateToken(String token) {
     try {
-      Jwts.parserBuilder()
-          .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
-          .build()
-          .parseClaimsJws(token);
+      getClaims(token);
       return true;
     } catch (Exception e) {
       return false;
