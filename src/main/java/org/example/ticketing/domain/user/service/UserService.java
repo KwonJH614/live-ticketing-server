@@ -30,34 +30,10 @@ public class UserService {
   private final JwtUtil jwtUtil;
 
   public Mono<RegisterResponse> register(RegisterRequest dto) {
-    return emailVerificationService.verifyCode(dto.email(), dto.verificationCode())
-        .flatMap(isValid -> {
-          if (!isValid) {
-            return Mono.error(new InvalidVerificationCodeException());
-          }
-          return userRepository.existsByEmail(dto.email())
-              .flatMap(emailExists -> {
-                if (emailExists) {
-                  return Mono.error(new DuplicateEmailException(dto.email()));
-                }
-                return userRepository.existsByUsername(dto.username())
-                    .flatMap(usernameExists -> {
-                      if (usernameExists) {
-                        return Mono.error(new DuplicateUsernameException(dto.username()));
-                      }
-                      User user = User.builder()
-                          .username(dto.username())
-                          .email(dto.email())
-                          .password(passwordEncoder.encode(dto.password()))
-                          .role(Role.USER)
-                          .createdAt(LocalDateTime.now())
-                          .build();
-
-                      return userRepository.save(user)
-                          .map(saved -> new RegisterResponse(saved.getUsername(), "회원가입 완료"));
-                    });
-              });
-        });
+    return verifyCode(dto.email(), dto.verificationCode())
+        .then(validateEmail(dto.email()))
+        .then(validateUsername(dto.username()))
+        .then(createUser(dto));
   }
 
   public Mono<TokenResponse> login(LoginRequestDto dto) {
@@ -78,4 +54,37 @@ public class UserService {
         );
   }
 
+  private Mono<Void> verifyCode(String email, String code) {
+    return emailVerificationService.verifyCode(email, code)
+        .filter(isValid -> isValid)
+        .switchIfEmpty(Mono.error(new InvalidVerificationCodeException()))
+        .then();
+  }
+
+  private Mono<Void> validateEmail(String email) {
+    return userRepository.existsByEmail(email)
+        .filter(exists -> !exists)
+        .switchIfEmpty(Mono.error(new DuplicateEmailException(email)))
+        .then();
+  }
+
+  private Mono<Void> validateUsername(String username) {
+    return userRepository.existsByUsername(username)
+        .filter(exists -> !exists)
+        .switchIfEmpty(Mono.error(new DuplicateUsernameException(username)))
+        .then();
+  }
+
+  private Mono<RegisterResponse> createUser(RegisterRequest dto) {
+    User user = User.builder()
+        .username(dto.username())
+        .email(dto.email())
+        .password(passwordEncoder.encode(dto.password()))
+        .role(Role.USER)
+        .createdAt(LocalDateTime.now())
+        .build();
+
+    return userRepository.save(user)
+        .map(saved -> new RegisterResponse(saved.getUsername(), "회원가입 완료"));
+  }
 }
