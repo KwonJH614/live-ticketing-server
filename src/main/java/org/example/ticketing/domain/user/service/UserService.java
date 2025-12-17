@@ -63,14 +63,14 @@ public class UserService {
 
   private Mono<Void> validateEmail(String email) {
     return userRepository.existsByEmail(email)
-        .filter(exists -> exists)
+        .filter(exists -> !exists)
         .switchIfEmpty(Mono.error(new DuplicateEmailException(email)))
         .then();
   }
 
   private Mono<Void> validateUsername(String username) {
     return userRepository.existsByUsername(username)
-        .filter(exists -> exists)
+        .filter(exists -> !exists)
         .switchIfEmpty(Mono.error(new DuplicateUsernameException(username)))
         .then();
   }
