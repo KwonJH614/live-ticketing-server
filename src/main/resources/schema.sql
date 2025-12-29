@@ -46,8 +46,8 @@ CREATE TABLE IF NOT EXISTS reservations (
     status VARCHAR(50) NOT NULL, -- Enum 처리
     reserved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_reservation_user FOREIGN KEY (user_id) REFERENCES users(id),
-    CONSTRAINT fk_reservation_event FOREIGN KEY (event_id) REFERENCES events(id),
-    CONSTRAINT fk_reservation_seat FOREIGN KEY (seat_id) REFERENCES seats(id),
-    CONSTRAINT fk_reservation_payment FOREIGN KEY (payment_id) REFERENCES payments(id)
+    CONSTRAINT fk_reservation_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_reservation_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_reservation_seat FOREIGN KEY (seat_id) REFERENCES seats(id) ON DELETE CASCADE,
+    CONSTRAINT fk_reservation_payment FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE SET NULL
 );
