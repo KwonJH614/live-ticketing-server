@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS seats (
     event_id BIGINT NOT NULL,
     seat_number VARCHAR(50) NOT NULL,
     is_reserved BOOLEAN DEFAULT FALSE,
-    CONSTRAINT fk_event_seat FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+    CONSTRAINT fk_event_seat FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    CONSTRAINT uk_event_seat_number UNIQUE (event_id, seat_number)
 );
 
 CREATE TABLE IF NOT EXISTS payments (
