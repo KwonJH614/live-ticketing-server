@@ -22,12 +22,7 @@ public class EventQueueService {
 
     return redis.opsForZSet()
         .add(key, username, timestamp)
-        .flatMap(added -> {
-          if (Boolean.FALSE.equals(added)) {
-            return getRank(eventId, username);
-          }
-          return getRank(eventId, username);
-        });
+        .then(getRank(eventId, username));
   }
 
   public Mono<Long> getRank(Long eventId, String username) {
