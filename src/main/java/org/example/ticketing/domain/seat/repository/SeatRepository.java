@@ -12,4 +12,6 @@ public interface SeatRepository extends ReactiveCrudRepository<Seat, Long> {
   Flux<Seat> findAllByEventIdOrderById(Long eventId);
   @Query("UPDATE seat SET reserved = true WHERE id = :seatId AND reserved = false")
   Mono<Integer> reserveIfAvailable(Long seatId);
+  @Query("UPDATE seat SET reserved = false WHERE id = :seatId")
+  Mono<Integer> releaseSeat(Long seatId);
 }

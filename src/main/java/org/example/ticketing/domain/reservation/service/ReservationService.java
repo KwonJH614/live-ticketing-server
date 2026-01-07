@@ -42,10 +42,56 @@ public class ReservationService {
                                        String paymentKey, Long amount, String orderId) {
 
     return validateHold(seatId, userId, token)
-        .then(approvePayment(paymentKey, orderId, amount))
-        .flatMap(approval -> savePaymentAndReserve(seatId, userId, approval))
+        .then(reserveSeatAndCreatePending(seatId, userId))
+        .flatMap(reservation ->
+            approvePayment(paymentKey, orderId, amount)
+                .flatMap(approval -> confirmReservationAndSavePayment(reservation, approval))
+                .onErrorResume(e -> cancelReservationAndReleaseSeat(reservation).then(Mono.error(e)))
+        )
         .doFinally(signal -> releaseHold(seatId, userId, token).subscribe())
         .then();
+  }
+
+  private Mono<Reservation> reserveSeatAndCreatePending(Long seatId, Long userId) {
+    return txOperator.transactional(
+        seatRepository.reserveIfAvailable(seatId)
+            .filter(updated -> updated == 1)
+            .switchIfEmpty(Mono.error(new SeatAlreadyReservedException()))
+            .then(seatRepository.findById(seatId))
+            .switchIfEmpty(Mono.error(new SeatNotFoundException()))
+            .flatMap(seat ->
+                reservationRepository.save(
+                    Reservation.builder()
+                        .userId(userId)
+                        .eventId(seat.getEventId())
+                        .seatId(seatId)
+                        .status(Status.PENDING)
+                        .reservedAt(LocalDateTime.now())
+                        .build()
+                )
+            )
+    );
+  }
+
+  private Mono<Void> confirmReservationAndSavePayment(Reservation reservation,
+                                                      PaymentApprovalResponseDto approval) {
+    return txOperator.transactional(
+        paymentRepository.save(paymentMapper.from(approval))
+            .flatMap(payment ->
+                reservationRepository.updatePaymentAndStatus(
+                    reservation.getId(), payment.getId(), Status.CONFIRMED
+                )
+            )
+            .then()
+    );
+  }
+
+  private Mono<Void> cancelReservationAndReleaseSeat(Reservation reservation) {
+    return txOperator.transactional(
+        reservationRepository.updateStatus(reservation.getId(), Status.CANCELLED)
+            .then(seatRepository.releaseSeat(reservation.getSeatId()))
+            .then()
+    );
   }
 
   private Mono<Void> validateHold(Long seatId, Long userId, String token) {
@@ -55,36 +101,6 @@ public class ReservationService {
 
   private Mono<PaymentApprovalResponseDto> approvePayment(String paymentKey, String orderId, Long amount) {
     return paymentService.approvePayment(paymentKey, orderId, amount);
-  }
-
-  private Mono<Void> savePaymentAndReserve(Long seatId, Long userId, PaymentApprovalResponseDto approval) {
-    return txOperator.transactional(
-        paymentRepository.save(paymentMapper.from(approval))
-            .flatMap(payment -> reserveSeatAndCreateReservation(seatId, userId, payment))
-    );
-  }
-
-  private Mono<Void> reserveSeatAndCreateReservation(Long seatId, Long userId, Payment payment) {
-    return seatRepository.reserveIfAvailable(seatId)
-        .filter(updated -> updated == 1)
-        .switchIfEmpty(Mono.error(new SeatAlreadyReservedException()))
-        .then(seatRepository.findById(seatId))
-        .switchIfEmpty(Mono.error(new SeatNotFoundException()))
-        .flatMap(seat -> createReservation(seat, userId, payment))
-        .then();
-  }
-
-  private Mono<Reservation> createReservation(Seat seat, Long userId, Payment payment) {
-    return reservationRepository.save(
-        Reservation.builder()
-            .userId(userId)
-            .eventId(seat.getEventId())
-            .seatId(seat.getId())
-            .paymentId(payment.getId())
-            .status(Status.CONFIRMED)
-            .reservedAt(LocalDateTime.now())
-            .build()
-    );
   }
 
   private Mono<Void> releaseHold(Long seatId, Long userId, String token) {
