@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 public interface ReservationRepository extends ReactiveCrudRepository<Reservation, Long> {
   @Query("UPDATE reservation SET status = :status WHERE id = :id")
-  Mono<Long> updateStatus(Long id, Status status);
+  Mono<Integer> updateStatus(Long id, Status status);
 
   @Query("UPDATE reservation SET payment_id = :paymentId, status = :status WHERE id = :id")
   Mono<Integer> updatePaymentAndStatus(Long id, Long paymentId, Status status);
