@@ -4,17 +4,6 @@
 
 본 프로젝트는 Spring WebFlux를 기반으로 구축된 고성능 실시간 티켓팅 예매 시스템입니다. 비동기 및 논블로킹(Asynchronous & Non-blocking) 처리를 통해 대규모 트래픽 상황에서도 안정적인 서비스를 제공하는 것을 목표로 합니다.
 
-## 주요 명령어 (Commands)
-
-```bash
-# Gradle을 사용한 프로젝트 빌드
-./gradlew build
-
-# 애플리케이션 실행
-./gradlew bootRun
-# 또는 JAR 파일로 실행
-# java -jar build/libs/ticketing-server-0.0.1-SNAPSHOT.jar
-```
 
 ## 프로젝트 구조
 
@@ -47,13 +36,34 @@ src/main/java/org/example/ticketing
 
 ## 환경설정 (Configuration)
 
-- **설정 파일**: `src/main/resources/application.yml` (또는 `application.properties`)
-- **주요 설정 키 (예시)**:
-    - `spring.r2dbc.*`: 데이터베이스 연결 정보 (URL, username, password)
-    - `spring.data.redis.*`: Redis 연결 정보 (host, port)
-    - `spring.jwt.secret`: JWT 서명에 사용되는 Base64 인코딩된 비밀 키
-    - `toss.secret.key`: Toss Payments 연동을 위한 시크릿 키
+- **설정 파일**: `application.properties`
+- **주요 설정 키**:
+```properties
+spring.application.name=ticketing
 
+spring.r2dbc.url=r2dbc:postgresql://localhost:5432/ticketing
+spring.r2dbc.username=your_db_username
+spring.r2dbc.password=your_db_password
+
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your_email
+spring.mail.password=your_password
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.transport.protocol=smtp
+
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+
+spring.jwt.secret=jwt_secret_key
+spring.expiration-ms=604800000
+
+toss.secret.key=your_toss_secret_key
+toss.client.key=your_toss_client_key
+toss.payments.api-url=https://api.tosspayments.com/v1/payments
+```
 ## API 엔드포인트 (API Endpoints)
 
 ### User & Auth (`/api/users`)
