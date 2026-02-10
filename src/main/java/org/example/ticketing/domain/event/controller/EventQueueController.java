@@ -21,7 +21,7 @@ public class EventQueueController {
       @PathVariable Long eventId,
       @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
   ) {
-    return eventQueueService.registerQueue(eventId, customUserPrincipal.username())
+    return eventQueueService.registerQueue(eventId, customUserPrincipal.userId())
         .map(rank -> ResponseEntity.ok(ApiResponse.success(rank)));
   }
 
@@ -30,7 +30,7 @@ public class EventQueueController {
       @PathVariable Long eventId,
       @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
   ) {
-    return eventQueueService.getQueueStatus(eventId, customUserPrincipal.username())
+    return eventQueueService.getQueueStatus(eventId, customUserPrincipal.userId())
         .map(status -> ResponseEntity.ok(ApiResponse.success(status)));
   }
 }
