@@ -63,6 +63,8 @@ spring.expiration-ms=604800000
 toss.secret.key=your_toss_secret_key
 toss.client.key=your_toss_client_key
 toss.payments.api-url=https://api.tosspayments.com/v1/payments
+
+reservation.hold-ttl=3m
 ```
 ## API 엔드포인트 (API Endpoints)
 
