@@ -36,7 +36,7 @@ public class EventController {
       @PathVariable Long id,
       @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
   ) {
-    return eventQueueService.getQueueStatus(id, customUserPrincipal.username())
+    return eventQueueService.getQueueStatus(id, customUserPrincipal.userId())
         .flatMap(status -> {
           if (!status.isAvailable()) {
             return Mono.error(new QueueWaitingException(status.rank()));
@@ -44,7 +44,7 @@ public class EventController {
 
           return eventService.getEventDetail(id)
               .flatMap(response ->
-                  eventQueueService.deleteQueue(response.id(), customUserPrincipal.username())
+                  eventQueueService.deleteQueue(response.id(), customUserPrincipal.userId())
                       .thenReturn(ResponseEntity.ok(ApiResponse.success(response))));
         });
   }
