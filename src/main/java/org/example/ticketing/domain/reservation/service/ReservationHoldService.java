@@ -5,6 +5,7 @@ import org.example.ticketing.domain.reservation.dto.HoldResponseDto;
 import org.example.ticketing.domain.reservation.exception.SeatAlreadyHeldException;
 import org.example.ticketing.domain.reservation.exception.SeatAlreadyReservedException;
 import org.example.ticketing.domain.seat.repository.SeatRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -17,6 +18,9 @@ import java.util.UUID;
 public class ReservationHoldService {
   private final ReactiveStringRedisTemplate redis;
   private final SeatRepository seatRepository;
+
+  @Value("${reservation.hold-ttl}")
+  private Duration holdTtl;
 
   public Mono<HoldResponseDto> holdSeat(Long seatId, Long userId) {
     String key = "seat:%d:hold".formatted(seatId);
@@ -33,7 +37,7 @@ public class ReservationHoldService {
         })
         .then(
             redis.opsForValue()
-                .setIfAbsent(key, value, Duration.ofMinutes(3))
+                .setIfAbsent(key, value, holdTtl)
                 .flatMap(success -> {
                   if (!success) {
                     return Mono.error(new SeatAlreadyHeldException());
