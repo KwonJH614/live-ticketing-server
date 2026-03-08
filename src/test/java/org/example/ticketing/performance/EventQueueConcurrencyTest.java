@@ -1,6 +1,6 @@
 package org.example.ticketing.performance;
 
-import org.example.ticketing.domain.event.service.EventQueueService;
+import org.example.ticketing.domain.Queue.service.EventQueueService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

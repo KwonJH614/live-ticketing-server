@@ -1,4 +1,4 @@
-package org.example.ticketing.domain.event.dto;
+package org.example.ticketing.domain.Queue.dto;
 
 import lombok.Builder;
 

@@ -1,7 +1,7 @@
-package org.example.ticketing.domain.event.service;
+package org.example.ticketing.domain.Queue.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.domain.event.dto.QueueStatusDto;
+import org.example.ticketing.domain.Queue.dto.QueueStatusDto;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -11,10 +11,11 @@ import java.time.Instant;
 @Service
 @RequiredArgsConstructor
 public class EventQueueService {
+
   private final ReactiveStringRedisTemplate redis;
 
-  private final static String QUEUE_KEY = "event:queue:";
-  private final static long ALLOWED_USER_COUNT = 1;
+  private static final String QUEUE_KEY = "event:queue:";
+  private static final long ALLOWED_USER_COUNT = 1;
 
   public Mono<Long> registerQueue(Long eventId, Long userId) {
     String key = QUEUE_KEY + eventId;

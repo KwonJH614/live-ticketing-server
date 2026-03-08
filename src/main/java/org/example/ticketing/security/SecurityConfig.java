@@ -34,33 +34,20 @@ public class SecurityConfig {
   @Bean
   public SecurityWebFilterChain securityWebFilterChain() {
     return ServerHttpSecurity.http()
+        .cors(cors -> {})
         .csrf(ServerHttpSecurity.CsrfSpec::disable)
         .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
         .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
         .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
         .authorizeExchange(exchanges -> exchanges
+            .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .pathMatchers(HttpMethod.POST, "/api/users/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/api/events/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/api/event/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/api/seat/**").permitAll()
             .pathMatchers(HttpMethod.POST, "/api/event").hasRole("ADMIN")
             .pathMatchers(HttpMethod.PUT, "/api/event/**").hasRole("ADMIN")
             .pathMatchers(HttpMethod.DELETE, "/api/event/**").hasRole("ADMIN")
-            .pathMatchers(HttpMethod.GET, "/api/event/**").permitAll()
-            .pathMatchers(HttpMethod.GET, "/api/seat/**").permitAll()
-            .pathMatchers(
-                "/index.html",
-                "/create-event.html",
-                "/event-detail.html",
-                "/login.html",
-                "/payment.html",
-                "/register.html",
-                "/payment-success.html",
-                "/js/api.js",
-                "/js/auth.js"
-                ).permitAll()
-            .pathMatchers("/swagger-ui.html").permitAll()
-            .pathMatchers("/swagger-ui/**").permitAll()
-            .pathMatchers("/v3/api-docs/**").permitAll()
-            .pathMatchers("/webjars/**").permitAll()
-            .pathMatchers("/health").permitAll()
             .anyExchange().authenticated()
         )
         .addFilterBefore(jwtAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
