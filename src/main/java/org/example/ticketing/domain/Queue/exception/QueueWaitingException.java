@@ -1,4 +1,4 @@
-package org.example.ticketing.domain.event.exception;
+package org.example.ticketing.domain.Queue.exception;
 
 import lombok.Getter;
 import org.example.ticketing.global.exception.CustomException;
