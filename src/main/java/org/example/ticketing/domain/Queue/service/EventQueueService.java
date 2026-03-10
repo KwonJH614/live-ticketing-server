@@ -15,23 +15,31 @@ public class EventQueueService {
   private final ReactiveStringRedisTemplate redis;
 
   private static final String QUEUE_KEY = "event:queue:";
-  private static final long ALLOWED_USER_COUNT = 1;
+  private static final long ALLOWED_USER_COUNT = 100;
 
   public Mono<Long> registerQueue(Long eventId, Long userId) {
     String key = QUEUE_KEY + eventId;
+    String userKey = key + ":users";
     String userIdStr = String.valueOf(userId);
+    String seqKey = key + ":seq";
 
-    return redis.opsForZSet()
-        .rank(key, userIdStr)
-        .map(rank -> rank + 1)
-        .switchIfEmpty(
-            Mono.defer(() -> {
-              long timestamp = Instant.now().toEpochMilli();
-              return redis.opsForZSet()
-                  .add(key, userIdStr, timestamp)
-                  .then(getRank(eventId, userId));
-            })
-        );
+    return redis.opsForSet()
+        .add(userKey, userIdStr)
+        .flatMap(added -> {
+          if (added == 0) {
+            return redis.opsForZSet()
+                .rank(key, userIdStr)
+                .map(rank -> rank + 1);
+          }
+
+          return redis.opsForValue()
+              .increment(seqKey)
+              .flatMap(seq -> redis.opsForZSet()
+                  .add(key, userIdStr, seq)
+                  .then(redis.opsForZSet()
+                      .rank(key, userIdStr))
+                      .map(rank -> rank + 1));
+        });
   }
 
   public Mono<Long> getRank(Long eventId, Long userId) {
