@@ -59,10 +59,14 @@ public class EventQueueService {
 
   public Mono<Boolean> deleteQueue(Long eventId, Long userId) {
     String key = QUEUE_KEY + eventId;
+    String userKey = key + ":users";
     String userIdStr = String.valueOf(userId);
 
     return redis.opsForZSet()
         .remove(key, userIdStr)
-        .map(removed -> removed > 0);
+        .flatMap(removed ->
+            redis.opsForSet()
+                .remove(userKey, userIdStr)
+                .thenReturn(removed > 0));
   }
 }
