@@ -18,12 +18,19 @@ public class EventQueueService {
 
   public Mono<Long> registerQueue(Long eventId, Long userId) {
     String key = QUEUE_KEY + eventId;
-    long timestamp = Instant.now().toEpochMilli();
     String userIdStr = String.valueOf(userId);
 
     return redis.opsForZSet()
-        .add(key, userIdStr, timestamp)
-        .then(getRank(eventId, userId));
+        .rank(key, userIdStr)
+        .map(rank -> rank + 1)
+        .switchIfEmpty(
+            Mono.defer(() -> {
+              long timestamp = Instant.now().toEpochMilli();
+              return redis.opsForZSet()
+                  .add(key, userIdStr, timestamp)
+                  .then(getRank(eventId, userId));
+            })
+        );
   }
 
   public Mono<Long> getRank(Long eventId, Long userId) {
