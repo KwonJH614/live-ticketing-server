@@ -41,10 +41,9 @@ public class EventController {
             return Mono.error(new QueueWaitingException(status.rank()));
           }
 
-          return eventService.getEventDetail(id)
-              .flatMap(response ->
-                  eventQueueService.deleteQueue(response.id(), customUserPrincipal.userId())
-                      .thenReturn(ResponseEntity.ok(ApiResponse.success(response))));
+          return eventQueueService.deleteQueue(id, customUserPrincipal.userId())
+              .then(eventService.getEventDetail(id))
+              .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
         });
   }
 
