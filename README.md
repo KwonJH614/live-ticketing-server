@@ -99,6 +99,9 @@ reservation.hold-ttl=3m
 ### Health Check
 - `GET /health`: 서버 상태 확인
 
+## ERD
+<img src="./images/erd_readme.png">
+
 ## 데이터 저장소 (Data Storage)
 
 - **Primary Database**: R2DBC를 통해 비동기로 연동된 관계형 데이터베이스(`PostgreSQL`)를 사용합니다. `Event`, `Seat`, `Reservation`, `User`, `Payment` 등의 핵심 엔티티를 저장합니다.
