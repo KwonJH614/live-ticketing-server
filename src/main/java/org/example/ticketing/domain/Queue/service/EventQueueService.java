@@ -2,8 +2,8 @@ package org.example.ticketing.domain.Queue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.Queue.dto.QueueStatusDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -18,8 +18,10 @@ public class EventQueueService {
   private static final String QUEUE_KEY = "event:queue:";
   private static final String ACCESS_KEY = "event:access:";
   private static final long ALLOWED_USER_COUNT = 100;
-  private static final Duration QUEUE_TTL = Duration.ofHours(2);
-  private static final Duration ACCESS_TTL = Duration.ofMinutes(10);
+  @Value("${spring.queue-ttl}")
+  private Duration QUEUE_TTL;
+  @Value("${spring.access-ttl}")
+  private Duration ACCESS_TTL;
 
   private String queueKey(Long eventId) {
     return QUEUE_KEY + eventId;
