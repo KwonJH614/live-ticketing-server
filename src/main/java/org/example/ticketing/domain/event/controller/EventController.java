@@ -35,15 +35,39 @@ public class EventController {
       @PathVariable Long id,
       @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
   ) {
-    return eventQueueService.getQueueStatus(id, customUserPrincipal.userId())
-        .flatMap(status -> {
-          if (!status.isAvailable()) {
-            return Mono.error(new QueueWaitingException(status.rank()));
+    Long userId = customUserPrincipal.userId();
+
+    return eventQueueService.hasAccess(id, userId)
+        .flatMap(hasAccess -> {
+          if (hasAccess) {
+            return eventService.getEventDetail(id)
+                .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
           }
 
-          return eventQueueService.deleteQueue(id, customUserPrincipal.userId())
-              .then(eventService.getEventDetail(id))
-              .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
+          return eventQueueService.getQueueStatus(id, userId)
+              .flatMap(status -> {
+                if (!status.isAvailable()) {
+                  return Mono.error(new QueueWaitingException(status.rank()));
+                }
+
+                return eventQueueService.grantAccess(id, userId)
+                    .flatMap(granted -> {
+                      if (!Boolean.TRUE.equals(granted)) {
+                        return Mono.error(new IllegalStateException("Failed to grant access token"));
+                      }
+                      return eventQueueService.deleteQueue(id, userId)
+                          .flatMap(deleted -> {
+                            if (!Boolean.TRUE.equals(deleted)) {
+                              return eventQueueService.revokeAccess(id, userId)
+                                  .then(Mono.error(new IllegalStateException("Failed to remove queue entry")));
+                            }
+                            return eventService.getEventDetail(id)
+                                .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
+                          })
+                          .onErrorResume(ex -> eventQueueService.revokeAccess(id, userId)
+                              .then(Mono.error(ex)));
+                    });
+              });
         });
   }
 

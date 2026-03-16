@@ -2,8 +2,8 @@ package org.example.ticketing.domain.Queue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.Queue.dto.QueueStatusDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -16,11 +16,33 @@ public class EventQueueService {
   private final ReactiveStringRedisTemplate redis;
 
   private static final String QUEUE_KEY = "event:queue:";
+  private static final String ACCESS_KEY = "event:access:";
   private static final long ALLOWED_USER_COUNT = 100;
-  private static final Duration QUEUE_TTL = Duration.ofHours(2);
+  @Value("${spring.queue-ttl}")
+  private Duration QUEUE_TTL;
+  @Value("${spring.access-ttl}")
+  private Duration ACCESS_TTL;
 
   private String queueKey(Long eventId) {
     return QUEUE_KEY + eventId;
+  }
+
+  private String accessKey(Long eventId, Long userId) {
+    return ACCESS_KEY + eventId + ":" + userId;
+  }
+
+  public Mono<Boolean> grantAccess(Long eventId, Long userId) {
+    return redis.opsForValue()
+        .set(accessKey(eventId, userId), "granted", ACCESS_TTL);
+  }
+
+  public Mono<Boolean> hasAccess(Long eventId, Long userId) {
+    return redis.hasKey(accessKey(eventId, userId));
+  }
+
+  public Mono<Boolean> revokeAccess(Long eventId, Long userId) {
+    return redis.delete(accessKey(eventId, userId))
+        .map(count -> count > 0);
   }
 
   public Mono<Long> registerQueue(Long eventId, Long userId) {
