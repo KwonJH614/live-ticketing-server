@@ -81,4 +81,33 @@ public class TossPaymentService {
         })
         .switchIfEmpty(Mono.error(new RuntimeException("토스 응답이 비어 있습니다 (null body)")));
   }
+
+  public Mono<Void> cancelPayment(String paymentKey, String cancelReason) {
+    String basicAuth = "Basic " + Base64.getEncoder()
+        .encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
+
+    Map<String, Object> body = Map.of("cancelReason", cancelReason);
+
+    return webClient.post()
+        .uri("https://api.tosspayments.com/v1/payments/{paymentKey}/cancel", paymentKey)
+        .header(HttpHeaders.AUTHORIZATION, basicAuth)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .bodyValue(body)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError, response ->
+            response.bodyToMono(String.class)
+                .flatMap(bodyStr -> {
+                  log.error("토스 취소 4xx 에러: {}", bodyStr);
+                  return Mono.error(new RuntimeException("토스 취소 요청 오류(4xx): " + bodyStr));
+                })
+        )
+        .onStatus(HttpStatusCode::is5xxServerError, response ->
+            response.bodyToMono(String.class)
+                .flatMap(bodyStr -> {
+                  log.error("토스 취소 5xx 에러: {}", bodyStr);
+                  return Mono.error(new RuntimeException("토스 취소 서버 오류(5xx): " + bodyStr));
+                })
+        )
+        .bodyToMono(Void.class);
+  }
 }

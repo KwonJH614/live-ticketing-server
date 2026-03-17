@@ -2,6 +2,7 @@ package org.example.ticketing.domain.reservation.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.payment.dto.PaymentApprovalResponseDto;
+import lombok.extern.slf4j.Slf4j;
 import org.example.ticketing.domain.payment.entity.Payment;
 import org.example.ticketing.domain.payment.enums.PaymentStatus;
 import org.example.ticketing.domain.payment.mapper.PaymentMapper;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
@@ -45,8 +47,24 @@ public class ReservationService {
         .then(reserveSeatAndCreatePending(seatId, userId))
         .flatMap(reservation ->
             approvePayment(paymentKey, orderId, amount)
-                .flatMap(approval -> confirmReservationAndSavePayment(reservation, approval))
-                .onErrorResume(e -> cancelReservationAndReleaseSeat(reservation).then(Mono.error(e)))
+                .flatMap(approval -> confirmReservationAndSavePayment(reservation, approval)
+                    .onErrorResume(dbError -> {
+                      log.error("DB 저장 실패, 토스 결제 취소 시도: {}", dbError.getMessage());
+                      return paymentService.cancelPayment(paymentKey, "DB 저장 실패로 인한 자동 취소")
+                          .onErrorResume(cancelError -> {
+                            log.error("토스 결제 취소 실패: {}", cancelError.getMessage());
+                            return Mono.empty();
+                          })
+                          .then(Mono.error(dbError));
+                    })
+                )
+                .onErrorResume(e -> cancelReservationAndReleaseSeat(reservation)
+                    .onErrorResume(rollbackError -> {
+                      log.error("롤백 실패 (원인: {}): {}", e.getMessage(), rollbackError.getMessage());
+                      return Mono.empty();
+                    })
+                    .then(Mono.error(e))
+                )
         )
         .doFinally(signal -> releaseHold(seatId, userId, token).subscribe())
         .then();
