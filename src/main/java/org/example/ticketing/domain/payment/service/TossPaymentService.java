@@ -66,9 +66,9 @@ public class TossPaymentService {
           if (!orderId.equals(response.get("orderId"))) {
             return Mono.error(new OrderIdMisMatchException());
           }
-//          if (!amount.equals(response.get("amount"))) {
-//            return Mono.error(new AmountMisMatchException());
-//          }
+          if (!amount.equals(((Number) response.get("totalAmount")).longValue())) {
+            return Mono.error(new AmountMisMatchException());
+          }
 
           PaymentApprovalResponseDto dto = PaymentApprovalResponseDto.builder()
               .paymentKey(paymentKey)
