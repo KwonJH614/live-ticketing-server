@@ -56,17 +56,11 @@ public class EventController {
                         return Mono.error(new IllegalStateException("Failed to grant access token"));
                       }
                       return eventQueueService.deleteQueue(id, userId)
-                          .flatMap(deleted -> {
-                            if (!Boolean.TRUE.equals(deleted)) {
-                              return eventQueueService.revokeAccess(id, userId)
-                                  .then(Mono.error(new IllegalStateException("Failed to remove queue entry")));
-                            }
-                            return eventService.getEventDetail(id)
-                                .map(response -> ResponseEntity.ok(ApiResponse.success(response)));
-                          })
-                          .onErrorResume(ex -> eventQueueService.revokeAccess(id, userId)
-                              .then(Mono.error(ex)));
-                    });
+                          .then(eventService.getEventDetail(id)
+                              .map(response -> ResponseEntity.ok(ApiResponse.success(response))));
+                    })
+                    .onErrorResume(ex -> eventQueueService.revokeAccess(id, userId)
+                        .then(Mono.error(ex)));
               });
         });
   }
