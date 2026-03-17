@@ -59,6 +59,10 @@ public class ReservationService {
                     })
                 )
                 .onErrorResume(e -> cancelReservationAndReleaseSeat(reservation)
+                    .onErrorResume(rollbackError -> {
+                      log.error("롤백 실패 (원인: {}): {}", e.getMessage(), rollbackError.getMessage());
+                      return Mono.empty();
+                    })
                     .then(Mono.error(e))
                 )
         )
