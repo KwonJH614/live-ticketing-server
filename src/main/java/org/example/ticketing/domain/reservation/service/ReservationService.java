@@ -51,11 +51,16 @@ public class ReservationService {
                     .onErrorResume(dbError -> {
                       log.error("DB 저장 실패, 토스 결제 취소 시도: {}", dbError.getMessage());
                       return paymentService.cancelPayment(paymentKey, "DB 저장 실패로 인한 자동 취소")
-                          .then(cancelReservationAndReleaseSeat(reservation))
+                          .onErrorResume(cancelError -> {
+                            log.error("토스 결제 취소 실패: {}", cancelError.getMessage());
+                            return Mono.empty();
+                          })
                           .then(Mono.error(dbError));
                     })
                 )
-                .onErrorResume(e -> cancelReservationAndReleaseSeat(reservation).then(Mono.error(e)))
+                .onErrorResume(e -> cancelReservationAndReleaseSeat(reservation)
+                    .then(Mono.error(e))
+                )
         )
         .doFinally(signal -> releaseHold(seatId, userId, token).subscribe())
         .then();
