@@ -40,7 +40,15 @@ public class SecurityConfig {
         .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
         .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
         .authorizeExchange(exchanges -> exchanges
+            .pathMatchers(
+                "/swagger-ui.html",
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/webjars/**"
+            ).permitAll()
             .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/health").permitAll()
+            .pathMatchers("/ws/**").permitAll()
             .pathMatchers(HttpMethod.POST, "/api/users/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/api/events/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/api/event/**").permitAll()
