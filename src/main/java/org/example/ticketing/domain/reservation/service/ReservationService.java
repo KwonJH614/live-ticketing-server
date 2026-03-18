@@ -125,6 +125,27 @@ public class ReservationService {
     return holdService.releaseHold(seatId, userId, token);
   }
 
+  public Mono<Void> cancelReservation(Long reservationId, Long userId) {
+    return reservationRepository.findByIdAndUserId(reservationId, userId)
+        .switchIfEmpty(Mono.error(new IllegalArgumentException("예약을 찾을 수 없습니다")))
+        .flatMap(reservation -> {
+          if (reservation.getStatus() != Status.CONFIRMED) {
+            return Mono.error(new IllegalStateException("취소할 수 없는 예약 상태입니다"));
+          }
+          return paymentRepository.findById(reservation.getPaymentId())
+              .switchIfEmpty(Mono.error(new IllegalStateException("결제 정보를 찾을 수 없습니다")))
+              .flatMap(payment ->
+                  paymentService.cancelPayment(payment.getPaymentKey(), "사용자 요청에 의한 취소")
+                      .then(txOperator.transactional(
+                          paymentRepository.updateStatus(payment.getId(), PaymentStatus.CANCELLED)
+                              .then(reservationRepository.updateStatus(reservation.getId(), Status.CANCELLED))
+                              .then(seatRepository.releaseSeat(reservation.getSeatId()))
+                              .then()
+                      ))
+              );
+        });
+  }
+
   public Mono<PageResponse<ReservationListDto>> getReservations(Long userId, int page, int size) {
     return Mono.zip(
         reservationCustomRepository.countByUserId(userId),
