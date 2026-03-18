@@ -11,7 +11,10 @@ import org.example.ticketing.domain.payment.service.TossPaymentService;
 import org.example.ticketing.domain.reservation.dto.ReservationListDto;
 import org.example.ticketing.domain.reservation.entity.Reservation;
 import org.example.ticketing.domain.reservation.enums.Status;
+import org.example.ticketing.domain.payment.exception.PaymentNotFoundException;
 import org.example.ticketing.domain.reservation.exception.InvalidHoldException;
+import org.example.ticketing.domain.reservation.exception.InvalidReservationStatusException;
+import org.example.ticketing.domain.reservation.exception.ReservationNotFoundException;
 import org.example.ticketing.domain.reservation.exception.SeatAlreadyReservedException;
 import org.example.ticketing.domain.reservation.repository.ReservationCustomRepository;
 import org.example.ticketing.domain.reservation.repository.ReservationRepository;
@@ -127,23 +130,27 @@ public class ReservationService {
 
   public Mono<Void> cancelReservation(Long reservationId, Long userId) {
     return reservationRepository.findByIdAndUserId(reservationId, userId)
-        .switchIfEmpty(Mono.error(new IllegalArgumentException("예약을 찾을 수 없습니다")))
-        .flatMap(reservation -> {
-          if (reservation.getStatus() != Status.CONFIRMED) {
-            return Mono.error(new IllegalStateException("취소할 수 없는 예약 상태입니다"));
-          }
-          return paymentRepository.findById(reservation.getPaymentId())
-              .switchIfEmpty(Mono.error(new IllegalStateException("결제 정보를 찾을 수 없습니다")))
-              .flatMap(payment ->
-                  paymentService.cancelPayment(payment.getPaymentKey(), "사용자 요청에 의한 취소")
-                      .then(txOperator.transactional(
-                          paymentRepository.updateStatus(payment.getId(), PaymentStatus.CANCELLED)
-                              .then(reservationRepository.updateStatus(reservation.getId(), Status.CANCELLED))
-                              .then(seatRepository.releaseSeat(reservation.getSeatId()))
-                              .then()
-                      ))
-              );
-        });
+        .switchIfEmpty(Mono.error(new ReservationNotFoundException()))
+        .flatMap(reservation ->
+            reservationRepository.compareAndUpdateStatus(reservationId, Status.CONFIRMED, Status.CANCELLED)
+                .filter(updated -> updated == 1)
+                .switchIfEmpty(Mono.error(new InvalidReservationStatusException()))
+                .then(paymentRepository.findById(reservation.getPaymentId()))
+                .switchIfEmpty(Mono.error(new PaymentNotFoundException()))
+                .flatMap(payment ->
+                    paymentService.cancelPayment(payment.getPaymentKey(), "사용자 요청에 의한 취소")
+                        .then(txOperator.transactional(
+                            paymentRepository.updateStatus(payment.getId(), PaymentStatus.CANCELLED)
+                                .then(seatRepository.releaseSeat(reservation.getSeatId()))
+                                .then()
+                        ))
+                        .onErrorResume(tossError -> {
+                          log.error("토스 취소 실패, 예약 상태 복구: {}", tossError.getMessage());
+                          return reservationRepository.updateStatus(reservationId, Status.CONFIRMED)
+                              .then(Mono.error(tossError));
+                        })
+                )
+        );
   }
 
   public Mono<PageResponse<ReservationListDto>> getReservations(Long userId, int page, int size) {
