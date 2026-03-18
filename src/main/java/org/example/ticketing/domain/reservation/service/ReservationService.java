@@ -11,7 +11,10 @@ import org.example.ticketing.domain.payment.service.TossPaymentService;
 import org.example.ticketing.domain.reservation.dto.ReservationListDto;
 import org.example.ticketing.domain.reservation.entity.Reservation;
 import org.example.ticketing.domain.reservation.enums.Status;
+import org.example.ticketing.domain.payment.exception.PaymentNotFoundException;
 import org.example.ticketing.domain.reservation.exception.InvalidHoldException;
+import org.example.ticketing.domain.reservation.exception.InvalidReservationStatusException;
+import org.example.ticketing.domain.reservation.exception.ReservationNotFoundException;
 import org.example.ticketing.domain.reservation.exception.SeatAlreadyReservedException;
 import org.example.ticketing.domain.reservation.repository.ReservationCustomRepository;
 import org.example.ticketing.domain.reservation.repository.ReservationRepository;
@@ -123,6 +126,31 @@ public class ReservationService {
 
   private Mono<Void> releaseHold(Long seatId, Long userId, String token) {
     return holdService.releaseHold(seatId, userId, token);
+  }
+
+  public Mono<Void> cancelReservation(Long reservationId, Long userId) {
+    return reservationRepository.findByIdAndUserId(reservationId, userId)
+        .switchIfEmpty(Mono.error(new ReservationNotFoundException()))
+        .flatMap(reservation ->
+            reservationRepository.compareAndUpdateStatus(reservationId, Status.CONFIRMED, Status.CANCELLED)
+                .filter(updated -> updated == 1)
+                .switchIfEmpty(Mono.error(new InvalidReservationStatusException()))
+                .then(paymentRepository.findById(reservation.getPaymentId()))
+                .switchIfEmpty(Mono.error(new PaymentNotFoundException()))
+                .flatMap(payment ->
+                    paymentService.cancelPayment(payment.getPaymentKey(), "사용자 요청에 의한 취소")
+                        .then(txOperator.transactional(
+                            paymentRepository.updateStatus(payment.getId(), PaymentStatus.CANCELLED)
+                                .then(seatRepository.releaseSeat(reservation.getSeatId()))
+                                .then()
+                        ))
+                        .onErrorResume(tossError -> {
+                          log.error("토스 취소 실패, 예약 상태 복구: {}", tossError.getMessage());
+                          return reservationRepository.updateStatus(reservationId, Status.CONFIRMED)
+                              .then(Mono.error(tossError));
+                        })
+                )
+        );
   }
 
   public Mono<PageResponse<ReservationListDto>> getReservations(Long userId, int page, int size) {

@@ -44,4 +44,13 @@ public class PaymentController {
         .then(Mono.fromCallable(() -> ResponseEntity.ok(ApiResponse.success())));
   }
 
+  @PostMapping("/cancel/{reservationId}")
+  public Mono<ResponseEntity<ApiResponse<Void>>> cancel(
+      @PathVariable Long reservationId,
+      @AuthenticationPrincipal CustomUserPrincipal principal
+  ) {
+    return reservationService.cancelReservation(reservationId, principal.userId())
+        .then(Mono.fromCallable(() -> ResponseEntity.ok(ApiResponse.success())));
+  }
+
 }
