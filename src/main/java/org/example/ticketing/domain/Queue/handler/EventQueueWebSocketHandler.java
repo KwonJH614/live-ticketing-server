@@ -17,6 +17,8 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 @Slf4j
@@ -161,11 +163,21 @@ public class EventQueueWebSocketHandler implements WebSocketHandler {
           break;
         }
       }
-      if (token == null || !jwtUtil.validateToken(token)) {
+      if (token == null) {
+        log.warn("WebSocket 인증 실패: token 파라미터 누락");
+        return null;
+      }
+      token = URLDecoder.decode(token, StandardCharsets.UTF_8);
+      if (!jwtUtil.validateToken(token)) {
         log.warn("WebSocket 인증 실패: 유효하지 않은 토큰");
         return null;
       }
-      return jwtUtil.getUserId(token);
+      Long userId = jwtUtil.getUserId(token);
+      if (userId == null) {
+        log.warn("WebSocket 인증 실패: 토큰에 userId 클레임 없음");
+        return null;
+      }
+      return userId;
     } catch (Exception e) {
       log.warn("WebSocket 인증 실패: {}", e.getMessage());
       return null;
