@@ -8,6 +8,7 @@ import org.example.ticketing.domain.Queue.dto.QueueStatusDto;
 import org.example.ticketing.domain.Queue.dto.QueueWebSocketResponse;
 import org.example.ticketing.domain.Queue.enums.QueueMessageType;
 import org.example.ticketing.domain.Queue.service.EventQueueService;
+import org.example.ticketing.security.JwtUtil;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.WebSocketHandler;
@@ -16,6 +17,8 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 @Slf4j
@@ -25,6 +28,7 @@ public class EventQueueWebSocketHandler implements WebSocketHandler {
 
   private final EventQueueService eventQueueService;
   private final ObjectMapper objectMapper;
+  private final JwtUtil jwtUtil;
 
   // 3초마다 push
   private static final Duration POLL_INTERVAL = Duration.ofSeconds(3);
@@ -36,9 +40,9 @@ public class EventQueueWebSocketHandler implements WebSocketHandler {
 
     // 파라미터 검증 실패 시 즉시 종료
     if (eventId == null || userId == null) {
-      log.warn("WebSocket 연결 실패 - 파라미터 누락: uri={}", session.getHandshakeInfo().getUri());
+      log.warn("WebSocket 연결 실패 - 인증 실패 또는 파라미터 누락: uri={}", session.getHandshakeInfo().getUri());
       return sendAndClose(session,
-          QueueWebSocketResponse.error("eventId 또는 userId가 올바르지 않습니다."),
+          QueueWebSocketResponse.error("인증 실패 또는 eventId가 올바르지 않습니다. token 파라미터를 확인하세요."),
           CloseStatus.BAD_DATA);
     }
 
@@ -151,14 +155,31 @@ public class EventQueueWebSocketHandler implements WebSocketHandler {
     try {
       String query = session.getHandshakeInfo().getUri().getQuery();
       if (query == null) return null;
+      String token = null;
       for (String param : query.split("&")) {
         String[] kv = param.split("=");
-        if (kv.length == 2 && "userId".equals(kv[0])) {
-          return Long.parseLong(kv[1]);
+        if (kv.length == 2 && "token".equals(kv[0])) {
+          token = kv[1];
+          break;
         }
       }
-      return null;
+      if (token == null) {
+        log.warn("WebSocket 인증 실패: token 파라미터 누락");
+        return null;
+      }
+      token = URLDecoder.decode(token, StandardCharsets.UTF_8);
+      if (!jwtUtil.validateToken(token)) {
+        log.warn("WebSocket 인증 실패: 유효하지 않은 토큰");
+        return null;
+      }
+      Long userId = jwtUtil.getUserId(token);
+      if (userId == null) {
+        log.warn("WebSocket 인증 실패: 토큰에 userId 클레임 없음");
+        return null;
+      }
+      return userId;
     } catch (Exception e) {
+      log.warn("WebSocket 인증 실패: {}", e.getMessage());
       return null;
     }
   }
