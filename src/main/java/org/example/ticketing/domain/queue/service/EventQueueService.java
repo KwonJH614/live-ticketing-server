@@ -1,7 +1,7 @@
-package org.example.ticketing.domain.Queue.service;
+package org.example.ticketing.domain.queue.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.domain.Queue.dto.QueueStatusDto;
+import org.example.ticketing.domain.queue.dto.QueueStatusDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class EventQueueService {
 
   private static final String QUEUE_KEY = "event:queue:";
   private static final String ACCESS_KEY = "event:access:";
-  private static final long ALLOWED_USER_COUNT = 100;
+  private static final long ALLOWED_USER_COUNT = 1;
   @Value("${spring.queue-ttl}")
   private Duration QUEUE_TTL;
   @Value("${spring.access-ttl}")

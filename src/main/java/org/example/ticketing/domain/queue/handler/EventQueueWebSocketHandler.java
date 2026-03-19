@@ -1,13 +1,13 @@
-package org.example.ticketing.domain.Queue.handler;
+package org.example.ticketing.domain.queue.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.ticketing.domain.Queue.dto.QueueStatusDto;
-import org.example.ticketing.domain.Queue.dto.QueueWebSocketResponse;
-import org.example.ticketing.domain.Queue.enums.QueueMessageType;
-import org.example.ticketing.domain.Queue.service.EventQueueService;
+import org.example.ticketing.domain.queue.dto.QueueStatusDto;
+import org.example.ticketing.domain.queue.dto.QueueWebSocketResponse;
+import org.example.ticketing.domain.queue.enums.QueueMessageType;
+import org.example.ticketing.domain.queue.service.EventQueueService;
 import org.example.ticketing.security.JwtUtil;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.CloseStatus;

@@ -1,7 +1,7 @@
-package org.example.ticketing.domain.Queue.dto;
+package org.example.ticketing.domain.queue.dto;
 
 import lombok.Builder;
-import org.example.ticketing.domain.Queue.enums.QueueMessageType;
+import org.example.ticketing.domain.queue.enums.QueueMessageType;
 
 @Builder
 public record QueueWebSocketResponse(

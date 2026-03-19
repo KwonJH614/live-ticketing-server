@@ -1,8 +1,8 @@
-package org.example.ticketing.domain.Queue.controller;
+package org.example.ticketing.domain.queue.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.domain.Queue.dto.QueueStatusDto;
-import org.example.ticketing.domain.Queue.service.EventQueueService;
+import org.example.ticketing.domain.queue.dto.QueueStatusDto;
+import org.example.ticketing.domain.queue.service.EventQueueService;
 import org.example.ticketing.global.response.ApiResponse;
 import org.example.ticketing.security.CustomUserPrincipal;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,7 @@
 package org.example.ticketing.global.config;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ticketing.domain.Queue.handler.EventQueueWebSocketHandler;
+import org.example.ticketing.domain.queue.handler.EventQueueWebSocketHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.HandlerMapping;
@@ -9,7 +9,6 @@ import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 

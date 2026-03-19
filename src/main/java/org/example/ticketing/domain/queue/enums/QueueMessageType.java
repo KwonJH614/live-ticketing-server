@@ -1,4 +1,4 @@
-package org.example.ticketing.domain.Queue.enums;
+package org.example.ticketing.domain.queue.enums;
 
 public enum QueueMessageType {
   RANK_UPDATE,   // 순위 업데이트 (3초마다)
