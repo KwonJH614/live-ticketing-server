@@ -15,6 +15,10 @@ public interface ReservationRepository extends ReactiveCrudRepository<Reservatio
   Mono<Integer> updateStatus(Long id, Status status);
 
   @Modifying
+  @Query("UPDATE reservations SET status = :newStatus WHERE id = :id AND status = :expectedStatus")
+  Mono<Integer> compareAndUpdateStatus(Long id, Status expectedStatus, Status newStatus);
+
+  @Modifying
   @Query("UPDATE reservations SET payment_id = :paymentId, status = :status WHERE id = :id")
   Mono<Integer> updatePaymentAndStatus(Long id, Long paymentId, Status status);
 }
