@@ -1,5 +1,6 @@
 package org.example.ticketing.domain.payment.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.ticketing.domain.payment.dto.ConfirmRequestDto;
 import org.example.ticketing.domain.reservation.service.ReservationHoldService;
@@ -30,7 +31,7 @@ public class PaymentController {
   @PostMapping("/confirm/{seatId}")
   public Mono<ResponseEntity<ApiResponse<Void>>> confirm(
       @PathVariable Long seatId,
-      @RequestBody ConfirmRequestDto confirmRequestDto,
+      @Valid @RequestBody ConfirmRequestDto confirmRequestDto,
       @AuthenticationPrincipal CustomUserPrincipal principal
   ) {
     return reservationService.confirmReservation(
