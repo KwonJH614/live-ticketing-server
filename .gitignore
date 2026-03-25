@@ -37,3 +37,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### k6 결과 ###
+k6/results/*.json
