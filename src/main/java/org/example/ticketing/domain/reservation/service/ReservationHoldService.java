@@ -1,7 +1,9 @@
 package org.example.ticketing.domain.reservation.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ticketing.domain.queue.service.EventQueueService;
 import org.example.ticketing.domain.reservation.dto.HoldResponseDto;
+import org.example.ticketing.domain.reservation.exception.QueueAccessRequiredException;
 import org.example.ticketing.domain.reservation.exception.SeatAlreadyHeldException;
 import org.example.ticketing.domain.reservation.exception.SeatAlreadyReservedException;
 import org.example.ticketing.domain.seat.repository.SeatRepository;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class ReservationHoldService {
   private final ReactiveStringRedisTemplate redis;
   private final SeatRepository seatRepository;
+  private final EventQueueService eventQueueService;
 
   @Value("${reservation.hold-ttl}")
   private Duration holdTtl;
@@ -33,7 +36,13 @@ public class ReservationHoldService {
             return Mono.error(new SeatAlreadyReservedException());
           }
 
-          return Mono.just(seat);
+          return eventQueueService.hasAccess(seat.getEventId(), userId)
+              .flatMap(hasAccess -> {
+                if (!hasAccess) {
+                  return Mono.error(new QueueAccessRequiredException());
+                }
+                return Mono.just(seat);
+              });
         })
         .then(
             redis.opsForValue()
