@@ -13,6 +13,7 @@ src/main/java/org/example/ticketing
 ├── domain            # 도메인별 비즈니스 로직
 │   ├── user
 │   ├── event
+│   ├── queue
 │   ├── seat
 │   ├── reservation
 │   ├── payment
@@ -65,6 +66,8 @@ toss.client.key=your_toss_client_key
 toss.payments.api-url=https://api.tosspayments.com/v1/payments
 
 reservation.hold-ttl=3m
+spring.queue-ttl=2h
+spring.access-ttl=10m
 ```
 ## API 엔드포인트 (API Endpoints)
 
@@ -73,12 +76,12 @@ reservation.hold-ttl=3m
 - `POST /register`: 회원가입
 - `POST /login`: 로그인 (JWT 발급)
 
-### Event (`/api/event`)
+### Event (`/api/events`)
 - `GET /`: 이벤트 목록 조회 (페이지네이션)
 - `POST /`: (ADMIN) 이벤트 생성
-- `GET /{eventId}`: 이벤트 상세 조회 (대기열 통과 시)
-- `PUT /{eventId}`: (ADMIN) 이벤트 수정
-- `DELETE /{eventId}`: (ADMIN) 이벤트 삭제
+- `GET /{id}`: 이벤트 상세 조회 (대기열 통과 시)
+- `PUT /{id}`: (ADMIN) 이벤트 수정
+- `DELETE /{id}`: (ADMIN) 이벤트 삭제
 
 ### Event Queue (`/api/queue`)
 - `POST /{eventId}`: 이벤트 대기열 등록 요청
@@ -95,6 +98,7 @@ reservation.hold-ttl=3m
 ### Payment (`/api/payment`)
 - `GET /client-key`: Toss Payments 클라이언트 키 조회
 - `POST /confirm/{seatId}`: 결제 최종 승인 요청
+- `POST /cancel/{reservationId}`: 결제 취소 요청
 
 ### Health Check
 - `GET /health`: 서버 상태 확인
