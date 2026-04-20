@@ -17,7 +17,7 @@ public class EventQueueService {
 
   private static final String QUEUE_KEY = "event:queue:";
   private static final String ACCESS_KEY = "event:access:";
-  private static final long ALLOWED_USER_COUNT = 50;
+  private static final long ALLOWED_USER_COUNT = 200;
   @Value("${spring.queue-ttl}")
   private Duration QUEUE_TTL;
   @Value("${spring.access-ttl}")
