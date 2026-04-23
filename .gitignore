@@ -40,3 +40,7 @@ out/
 
 ### k6 결과 ###
 k6/results/*.json
+
+### 배포 환경변수 ###
+.env
+!.env.example

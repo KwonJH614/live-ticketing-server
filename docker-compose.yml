@@ -1,11 +1,47 @@
-version: '3.8'
 services:
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - "256mb"
+      - --maxmemory-policy
+      - "allkeys-lru"
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - redis
+    ports:
+      - "8080:8080"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      RDS_HOST: ${RDS_HOST}
+      RDS_PORT: ${RDS_PORT:-5432}
+      RDS_DB: ${RDS_DB}
+      RDS_USER: ${RDS_USER}
+      RDS_PASSWORD: ${RDS_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      TOSS_SECRET_KEY: ${TOSS_SECRET_KEY}
+      TOSS_CLIENT_KEY: ${TOSS_CLIENT_KEY}
+      R2DBC_POOL_MAX: ${R2DBC_POOL_MAX:-30}
+      JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=60 -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError}
 
 volumes:
   redis-data:
