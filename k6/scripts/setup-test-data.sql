@@ -1,19 +1,17 @@
 -- ============================================================
 --  k6 부하 테스트용 데이터 생성 SQL
 --  - 이메일 인증을 거치지 않고 직접 DB에 테스트 유저 INSERT
---  - password: 'Test1234!' 의 BCrypt 해시
 --  - 실행: psql -d ticketing -f k6/scripts/setup-test-data.sql
 -- ============================================================
 
--- 테스트 유저 생성 (100명)
+-- 테스트 유저 생성 (1000명)
 -- BCrypt 해시는 Spring BCryptPasswordEncoder 로 생성한 값 사용
--- 아래는 'Test1234!' 의 해시 (서버 실행 후 /api/users/register 로 1명 생성하여 해시값 확인 후 교체)
 DO $$
 DECLARE
   i INTEGER;
-  hashed_password TEXT := '$2a$10$REPLACE_WITH_YOUR_BCRYPT_HASH';
+  hashed_password TEXT := '$2a$10$OUo16F86JPIWPo99HlZySOe2QfElzasxfMRHtWL1sFf/98lz3XTuG';
 BEGIN
-  FOR i IN 1..100 LOOP
+  FOR i IN 1..1000 LOOP
     INSERT INTO users (username, password, email, role)
     VALUES (
       'loadtest_user_' || i,
