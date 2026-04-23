@@ -76,7 +76,7 @@ public class SecurityConfig {
           String role = claims.get("role", String.class);
           Long userId = claims.get("userId", Long.class);
 
-          if (username != null && !username.isEmpty() && role != null && !role.isEmpty()) {
+          if (userId != null && username != null && !username.isEmpty() && role != null && !role.isEmpty()) {
             CustomUserPrincipal principal = new CustomUserPrincipal(userId, username);
 
             AbstractAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
