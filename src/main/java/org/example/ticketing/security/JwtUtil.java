@@ -4,9 +4,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
@@ -18,6 +20,13 @@ public class JwtUtil {
   @Value("${spring.expiration-ms}")
   private Long expirationMs;
 
+  private SecretKey signingKey;
+
+  @PostConstruct
+  void init() {
+    this.signingKey = Keys.hmacShaKeyFor(secret.getBytes());
+  }
+
   public String generateToken(Long userId, String username, String role) {
     return Jwts.builder()
         .setSubject(username)
@@ -25,13 +34,13 @@ public class JwtUtil {
         .claim("role", role)
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-        .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
+        .signWith(signingKey, SignatureAlgorithm.HS256)
         .compact();
   }
 
-  private Claims getClaims(String token) {
+  public Claims getClaims(String token) {
     return Jwts.parserBuilder()
-        .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+        .setSigningKey(signingKey)
         .build()
         .parseClaimsJws(token)
         .getBody();

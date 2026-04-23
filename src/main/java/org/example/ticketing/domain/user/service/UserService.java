@@ -17,6 +17,7 @@ import org.example.ticketing.security.JwtUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
 
@@ -39,18 +40,11 @@ public class UserService {
   public Mono<TokenResponse> login(LoginRequestDto dto) {
     return userRepository.findByUsername(dto.username())
         .switchIfEmpty(Mono.error(new UserNotFoundException()))
-        .flatMap(user ->
-            passwordEncoder.matches(dto.password(), user.getPassword())
-                ? Mono.just(
-                new TokenResponse(
-                    jwtUtil.generateToken(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getRole().name()
-                    )
-                )
-            )
-                : Mono.error(new InvalidPasswordException())
+        .flatMap(user -> Mono.fromCallable(() -> passwordEncoder.matches(dto.password(), user.getPassword()))
+            .subscribeOn(Schedulers.boundedElastic())
+            .flatMap(matches -> matches
+                ? Mono.just(createTokenResponse(user))
+                : Mono.error(new InvalidPasswordException()))
         );
   }
 
@@ -76,15 +70,26 @@ public class UserService {
   }
 
   private Mono<RegisterResponse> createUser(RegisterRequest dto) {
-    User user = User.builder()
-        .username(dto.username())
-        .email(dto.email())
-        .password(passwordEncoder.encode(dto.password()))
-        .role(Role.USER)
-        .createdAt(LocalDateTime.now())
-        .build();
+    return Mono.fromCallable(() -> passwordEncoder.encode(dto.password()))
+        .subscribeOn(Schedulers.boundedElastic())
+        .map(encodedPassword -> User.builder()
+            .username(dto.username())
+            .email(dto.email())
+            .password(encodedPassword)
+            .role(Role.USER)
+            .createdAt(LocalDateTime.now())
+            .build())
+        .flatMap(userRepository::save)
+        .map(saved -> new RegisterResponse(saved.getUsername(), "Register completed"));
+  }
 
-    return userRepository.save(user)
-        .map(saved -> new RegisterResponse(saved.getUsername(), "회원가입 완료"));
+  private TokenResponse createTokenResponse(User user) {
+    return new TokenResponse(
+        jwtUtil.generateToken(
+            user.getId(),
+            user.getUsername(),
+            user.getRole().name()
+        )
+    );
   }
 }

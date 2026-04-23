@@ -1,5 +1,6 @@
 package org.example.ticketing.security;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -70,22 +71,21 @@ public class SecurityConfig {
         String token = authHeader.substring(7);
 
         try {
-          if (jwtUtil.validateToken(token)) {
-            String username = jwtUtil.getUsername(token);
-            String role = jwtUtil.getRole(token);
-            Long userId = jwtUtil.getUserId(token);
+          Claims claims = jwtUtil.getClaims(token);
+          String username = claims.getSubject();
+          String role = claims.get("role", String.class);
+          Long userId = claims.get("userId", Long.class);
 
-            if (username != null && !username.isEmpty() && role != null && !role.isEmpty()) {
-              CustomUserPrincipal principal = new CustomUserPrincipal(userId, username);
+          if (userId != null && username != null && !username.isEmpty() && role != null && !role.isEmpty()) {
+            CustomUserPrincipal principal = new CustomUserPrincipal(userId, username);
 
-              AbstractAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                  principal, null,
-                  Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-              );
+            AbstractAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                principal, null,
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+            );
 
-              return chain.filter(exchange)
-                  .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
-            }
+            return chain.filter(exchange)
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
           }
         } catch (Exception e) {
           log.warn("JWT authentication failed: {}", e.getMessage());
